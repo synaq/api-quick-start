@@ -8,6 +8,53 @@ The SYNAQ API allows resellers integrated with it to directly manipulate custome
 
 Before getting into concrete usage examples for our various products, we need to define a few basic concepts which apply throughout all API workflows.
 
+## Contents
+
+- [Basic concepts](#basic-concepts)
+  * [Products](#products)
+  * [Editions](#editions)
+  * [Organisational Units (OUs)](#organisational-units-ous)
+  * [Packages](#packages)
+  * [Domains](#domains)
+  * [Mailboxes](#mailboxes)
+  * [Service fields](#service-fields)
+  * [Asynchronous actions](#asynchronous-actions)
+  * [Domain (and mailbox) actions](#domain-and-mailbox-actions)
+- [Prerequisites](#prerequisites)
+- [Online API documentation and development sandbox](#online-api-documentation-and-development-sandbox)
+- [Developer Support](#developer-support)
+- [Usage examples](#usage-examples)
+  * [Request Authentication](#request-authentication)
+  * [OU Creation: Creating a company underneath an existing reseller](#ou-creation-creating-a-company-underneath-an-existing-reseller)
+  * [Package Creation: Look up all possible package combinations under a given company](#package-creation-look-up-all-possible-package-combinations-under-a-given-company)
+  * [Package Creation: Create a new CloudMail package](#package-creation-create-a-new-cloudmail-package)
+  * [Package Creation: Create a new Securemail Bidirectional package](#package-creation-create-a-new-securemail-bidirectional-package)
+  * [Package Creation: Create a new Branding package](#package-creation-create-a-new-branding-package)
+  * [Domain Creation: Create a new standalone domain which can be linked to an existing package](#domain-creation-create-a-new-standalone-domain-which-can-be-linked-to-an-existing-package)
+  * [Domain Creation: Linking an existing domain to a package](#domain-creation-linking-an-existing-domain-to-a-package)
+  * [Domain Creation: Creating a new domain and linking it to an existing package automatically](#domain-creation-creating-a-new-domain-and-linking-it-to-an-existing-package-automatically)
+  * [Domain Creation: Configuring the service fields on a domain](#domain-creation-configuring-the-service-fields-on-a-domain)
+  * [Domain Creation: Provisioning a domain](#domain-creation-provisioning-a-domain)
+  * [Domain Creation: Provisioning a package](#domain-creation-provisioning-a-package)
+  * [Domain Creation: Creating a new domain, linking it to an existing CloudMail package, and provisioning it automatically](#domain-creation-creating-a-new-domain-linking-it-to-an-existing-cloudmail-package-and-provisioning-it-automatically)
+  * [Domain maintenance: Closing a domain](#domain-maintenance-closing-a-domain)
+  * [Domain maintenance: Reactivating a domain](#domain-maintenance-reactivating-a-domain)
+  * [Domain maintenance: Deleting a domain](#domain-maintenance-deleting-a-domain)
+  * [Package maintenance: Deleting a package](#package-maintenance-deleting-a-package)
+  * [Organisation Maintenance: Deleting an organisation](#organisation-maintenance-deleting-an-organisation)
+  * [Mailbox Creation: Creating a mailbox under a domain](#mailbox-creation-creating-a-mailbox-under-a-domain)
+  * [Mailbox Creation: Provisioning a mailbox](#mailbox-creation-provisioning-a-mailbox)
+  * [Mailbox Creation: Creating a mailbox under a domain and provisioning it immediately.](#mailbox-creation-creating-a-mailbox-under-a-domain-and-provisioning-it-immediately)
+  * [Mailbox Maintenance: Updating a mailbox](#mailbox-maintenance-updating-a-mailbox)
+  * [Mailbox Maintenance: Suspending a mailbox](#mailbox-maintenance-suspending-a-mailbox)
+  * [Mailbox Maintenance: Closing a mailbox](#mailbox-maintenance-closing-a-mailbox)
+  * [Mailbox Maintenance: Reactivating a mailbox](#mailbox-maintenance-reactivating-a-mailbox)
+  * [Mailbox Maintenance: Unlocking a mailbox](#mailbox-maintenance-unlocking-a-mailbox)
+  * [Mailbox Maintenance: Changing the edition (class of service) of a mailbox](#mailbox-maintenance-changing-the-edition-class-of-service-of-a-mailbox)
+  * [Mailbox Maintenance: Delete a mailbox](#mailbox-maintenance-delete-a-mailbox)
+  * [Billing: Request a usage count for a domain](#billing-request-a-usage-count-for-a-domain)
+- [Advanced use cases](#advanced-use-cases)
+
 ## Basic concepts
 
 ### Products
