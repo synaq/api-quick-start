@@ -96,7 +96,7 @@ The user name and API key are provided by SYNAQ. The salt is a standard UNIX tim
 
 ** While a standard timestamp will suffice, it is important that timestamps not be reused, to prevent replay attacks. If you expect your API client to make more than one request per second, we advise using a modified timestamp which includes milliseconds or microseconds to increase granularity.
 
-*PHP Hash Generation Example*
+**PHP Hash Generation Example**
 
 ```
 $username = 'client@client.com';
@@ -113,9 +113,9 @@ Create a company titled "Acme Ltd", belonging to the authenticated reseller.
 POST /api/v1/ous/{reseller-guid}/companies.json
 ```
 
-*reseller-guid:* The root level reseller GUID provided by SYNAQ, or a sub-reseller GUID, which can be obtained by first creating a sub-reseller** via the API.
+**reseller-guid:** The root level reseller GUID provided by SYNAQ, or a sub-reseller GUID, which can be obtained by first creating a sub-reseller** via the API.
 
-*Request payload:*
+**Request payload:**
 
 ```
 {
@@ -136,7 +136,7 @@ POST /api/v1/ous/{reseller-guid}/companies.json
 
 The `title` field on the OU, and `line_1`, `city`, `postal_code` and `country` on the `physical_address` object are all requered fields. All other fields are optional.
 
-*Response headers:*
+**Response headers:**
 
 ```
 201 Created
@@ -169,7 +169,7 @@ Create an instance of the CloudMail product with 2 mailbox types; Basic 2GB and 
 POST /api/v1/ous/{company-guid}/packages.json
 ```
 
-*Request payload:*
+**Request payload:**
 
 ```
 {
@@ -187,14 +187,14 @@ POST /api/v1/ous/{company-guid}/packages.json
 }
 ```
 
-*Response headers:*
+**Response headers:**
 
 ```
 201 Created
 location: /api/v1/packages/{package-guid}
 ```
 
-*Note:* An empty array can be specified for the editions parameter above on the CloudMail product only. In such cases, all default allowed editions will be enabled for the package.
+**Note:** An empty array can be specified for the editions parameter above on the CloudMail product only. In such cases, all default allowed editions will be enabled for the package.
 
 For all other products, an edition must be selected at package creation time.
 
@@ -206,7 +206,7 @@ Create a Securemail bidirectional package, note the edition code "SYN-PIN-SEC-BO
 POST /api/v1/ous/{company-guid}/packages.json
 ```
 
-*Request payload:*
+**Request payload:**
 
 ```
 {
@@ -221,7 +221,7 @@ POST /api/v1/ous/{company-guid}/packages.json
 }
 ```
 
-*Response headers:*
+**Response headers:**
 
 ```
 201 Created
@@ -236,7 +236,7 @@ Create a Branding package, note the edition code "SYN-PIN-BRD", Branding is a pl
 POST /api/v1/ous/{company-guid}/packages.json
 ```
 
-*Request payload:*
+**Request payload:**
 
 ```
 {
@@ -251,7 +251,7 @@ POST /api/v1/ous/{company-guid}/packages.json
 }
 ```
 
-*Response headers:*
+**Response headers:**
 
 ```
 201 Created
@@ -264,7 +264,7 @@ location: /api/v1/packages/{package-guid}
 POST /api/v1/ous/{company-guid}/domains.json
 ```
 
-*Request payload:*
+**Request payload:**
 
 ```
 {
@@ -274,7 +274,7 @@ POST /api/v1/ous/{company-guid}/domains.json
 }
 ```
 
-*Response headers:*
+**Response headers:**
 
 ```
 201 Created
@@ -289,7 +289,7 @@ Before packages or domains can be provisioned, or have their service fields conf
 LINK /api/v1/packages/{package-guid}/domains/{domain-guid}.json
 ```
 
-*Response headers:*
+**Response headers:**
 
 ```
 204 No Content
@@ -305,7 +305,7 @@ In reality, the domain is still owned by the OU which owns the package, but usin
 POST /api/v1/packages/{package-guid}/domains.json
 ```
 
-*Request payload:*
+**Request payload:**
 
 ```
 {
@@ -315,7 +315,7 @@ POST /api/v1/packages/{package-guid}/domains.json
 }
 ```
 
-*Response headers:*
+**Response headers:**
 
 ```
 201 Created
@@ -328,13 +328,13 @@ Most products require additional service information to be configured before a d
 
 To determine which fields require information, the general use GET endpoint for domains may be used with the given domain GUID, and the `fields` object may be inspected.
 
-*Note:* The endpoint also exposes a legacy `service_fields` object, which was used in a previous mechanism for retreiving information passed back from the services. Please do no confuse that object for `fields` as described above.
+**Note:** The endpoint also exposes a legacy `service_fields` object, which was used in a previous mechanism for retreiving information passed back from the services. Please do no confuse that object for `fields` as described above.
 
 ```
 GET /api/v1/domains/{domain-guid}.json
 ```
 
-*Sample Response for a bidirectional Securemail domain (abbreviated):*
+**Sample Response for a bidirectional Securemail domain (abbreviated):**
 
 ```
 {
@@ -357,7 +357,7 @@ This shows required fields for the selected package combination, and their curre
 PATCH /api/v1/domains/{domain-guid}/servicefields.json
 ```
 
-*Reqeust payload:*
+**Reqeust payload:**
 
 ```
 {
@@ -371,7 +371,7 @@ PATCH /api/v1/domains/{domain-guid}/servicefields.json
 }
 ```
 
-*Response headers:*
+**Response headers:**
 
 ```
 204 No Content
@@ -385,7 +385,7 @@ Once service configuration information has been populated in the service fields,
 POST /api/v1/domains/{domain-guid}/actions.json
 ```
 
-*Request payload:*
+**Request payload:**
 
 ```
 {
@@ -395,7 +395,7 @@ POST /api/v1/domains/{domain-guid}/actions.json
 }
 ```
 
-*Response headers:*
+**Response headers:**
 
 ```
 202 Accepted
@@ -408,7 +408,7 @@ The `location` header references the location of the newly created provisioning 
 GET /api/v1/domains/{domain-guid}/actions/{action-id}
 ```
 
-*Sample response:*
+**Sample response:**
 
 ```
 {
@@ -428,7 +428,7 @@ In cases when multiple domains are linked to a package, or where a new package i
 POST /api/v1/packages/{package-guid}/actions.json
 ```
 
-*Request payload:*
+**Request payload:**
 
 ```
 {
@@ -438,7 +438,7 @@ POST /api/v1/packages/{package-guid}/actions.json
 }
 ```
 
-*Response headers:*
+**Response headers:**
 
 ```
 202 Accepted
@@ -461,7 +461,7 @@ The GUID for the actual domain may be inferred by parsing the location of the pr
 POST /api/v1/packages/{package-guid}/domains.json
 ```
 
-*Request payload:*
+**Request payload:**
 
 ```
 {
@@ -472,7 +472,7 @@ POST /api/v1/packages/{package-guid}/domains.json
 }
 ```
 
-*Response headers:*
+**Response headers:**
 
 ```
 202 Accepted
@@ -491,7 +491,7 @@ To close a domain, create an asynchronous `Close` action on the domain actions e
 POST /api/v1/packages/{package-guid}/actions.json
 ```
 
-*Request payload:*
+**Request payload:**
 
 ```
 {
@@ -501,7 +501,7 @@ POST /api/v1/packages/{package-guid}/actions.json
 }
 ```
 
-*Response headers:*
+**Response headers:**
 
 ```
 202 Accepted
@@ -516,7 +516,7 @@ A closed domain may be reactivated (returned to service) by using the asynchrono
 POST /api/v1/packages/{package-guid}/actions.json
 ```
 
-*Request payload:*
+**Request payload:**
 
 ```
 {
@@ -526,7 +526,7 @@ POST /api/v1/packages/{package-guid}/actions.json
 }
 ```
 
-*Response headers:*
+**Response headers:**
 
 ```
 202 Accepted
@@ -541,7 +541,7 @@ If an end customer has cancelled service for a domain, and an integrator wishes 
 POST /api/v1/domains/{domain-guid}/actions.json
 ```
 
-*Request payload:*
+**Request payload:**
 
 ```
 {
@@ -551,7 +551,7 @@ POST /api/v1/domains/{domain-guid}/actions.json
 }
 ```
 
-*Response headers:*
+**Response headers:**
 
 ```
 202 Accepted
@@ -564,13 +564,13 @@ Once the action reports a state of `finished`, the domain will be in the `delete
 DELETE /api/v1/domains/{domain-guid}.json
 ```
 
-*Response headers:*
+**Response headers:**
 
 ```
 204 No Content
 ```
 
-*Notes:*
+**Notes:**
 
 * The `DELETE` action is only permitted for domains in the `inactive` or `deleted` states. A domain in any other state can not be deleted from the API's records.
 
@@ -584,7 +584,7 @@ If all of the domains on a package are either in the `deleted` state, or if the 
 DELETE /api/v1/packages/{package-guid}.json
 ```
 
-*Response headers:*
+**Response headers:**
 
 ```
 204 No Content
@@ -598,7 +598,7 @@ If a company no longer has any active packages associated with it, its records m
 DELETE /api/v1/ous/{ou-guid}.json
 ```
 
-*Response headers:*
+**Response headers:**
 
 ```
 204 No Content
@@ -608,7 +608,7 @@ DELETE /api/v1/ous/{ou-guid}.json
 
 For products where mailboxes are directly exposed via the API, such as CloudMail and Continuity, a mailbox may be created and provisioned under a domain once the domain has been provisioned.
 
-*Notes:*
+**Notes:**
 
 * Only the `email_local`, `password` and `last_name` fields are required. Many other fields are available. Please see the API documentation for a full description of all available fields.
 * A mailbox edition may be specified using the optional `package_edition_code`. The code specified must be a valid edition on the package. If no code is specified, the default edition on the package, usually the simplest mailbox type, will be used. Specifying the edition this way is recommended, as it simplifies the provisioning process. The API provides a PATCH endpoint to allow the updating of mailbox editions at any time (also for active mailboxes). Please see examples related to changing a mailbox edition below, and the online sandbox tool, for more information.
@@ -617,7 +617,7 @@ For products where mailboxes are directly exposed via the API, such as CloudMail
 POST /api/v1/domains/{domain-guid}/mailboxes.json
 ```
 
-*Request payload:*
+**Request payload:**
 
 ```
 {
@@ -630,7 +630,7 @@ POST /api/v1/domains/{domain-guid}/mailboxes.json
 }
 ```
 
-*Response headers:*
+**Response headers:**
 
 ```
 201 Created
@@ -647,7 +647,7 @@ The action follows the standard process for asynchronous actions.
 POST /api/v1/mailboxes/{mailbox-guid}/actions.json
 ```
 
-*Request payload:*
+**Request payload:**
 
 ```
 {
@@ -657,7 +657,7 @@ POST /api/v1/mailboxes/{mailbox-guid}/actions.json
 }
 ```
 
-*Response headers:*
+**Response headers:**
 
 ```
 202 Accepted
@@ -672,7 +672,7 @@ As a convenience method to simplify the mailbox provisioning workflow, the mailb
 POST /api/v1/domains/{domain-guid}/mailboxes.json
 ```
 
-*Request payload:*
+**Request payload:**
 
 ```
 {
@@ -686,7 +686,7 @@ POST /api/v1/domains/{domain-guid}/mailboxes.json
 }
 ```
 
-*Response headers:*
+**Response headers:**
 
 ```
 202 Accepted
@@ -699,13 +699,13 @@ Occasionally, it may be necessary to update the details of a mailbox, such as di
 
 This can be done on inactive and provisioned mailboxes using a PATCH call on the mailbox endpoint. Only the fields to be changed should be included in the payload.
 
-*Note:* When updating a provisioned mailbox, the API will automatically create an asynchronous `Update` action to propagate the change to actual services. The response will include a reference to the location of this action.
+**Note:** When updating a provisioned mailbox, the API will automatically create an asynchronous `Update` action to propagate the change to actual services. The response will include a reference to the location of this action.
 
 ```
 PATCH /api/v1/mailboxes/{mailbox-guid}.json
 ```
 
-*Possible request payload:*
+**Possible request payload:**
 
 ```
 {
@@ -715,13 +715,13 @@ PATCH /api/v1/mailboxes/{mailbox-guid}.json
 }
 ```
 
-*Response headers for inactive mailboxes:*
+**Response headers for inactive mailboxes:**
 
 ```
 204 No Content
 ```
 
-*Response headers for active mailboxes:*
+**Response headers for active mailboxes:**
 
 ```
 202 Accepted
@@ -738,7 +738,7 @@ This is done by creating an asynchronous `Suspend` action on the mailbox.
 POST /api/v1/mailboxes/{mailbox-guid}/actions.json
 ```
 
-*Request payload:*
+**Request payload:**
 
 ```
 {
@@ -748,7 +748,7 @@ POST /api/v1/mailboxes/{mailbox-guid}/actions.json
 }
 ```
 
-*Response headers:*
+**Response headers:**
 
 ```
 202 Accepted
@@ -763,7 +763,7 @@ Closing a mailbox is a more severe form of service suspension. A closed mailbox 
 POST /api/v1/mailboxes/{mailbox-guid}/actions.json
 ```
 
-*Request payload:*
+**Request payload:**
 
 ```
 {
@@ -773,7 +773,7 @@ POST /api/v1/mailboxes/{mailbox-guid}/actions.json
 }
 ```
 
-*Response headers:*
+**Response headers:**
 
 ```
 202 Accepted
@@ -788,7 +788,7 @@ A mailbox may be returned from either the suspended or closed states by creating
 POST /api/v1/mailboxes/{mailbox-guid}/actions.json
 ```
 
-*Request payload:*
+**Request payload:**
 
 ```
 {
@@ -798,7 +798,7 @@ POST /api/v1/mailboxes/{mailbox-guid}/actions.json
 }
 ```
 
-*Response headers:*
+**Response headers:**
 
 ```
 202 Accepted
@@ -817,7 +817,7 @@ The state of the mailbox may be inspected using the normal mailbox GET endpoint.
 GET /api/v1/mailboxes/{mailbox-guid}.json
 ```
 
-*Sample response for a locked mailbox (abbreviated)*
+**Sample response for a locked mailbox (abbreviated)**
 
 ```
 {
@@ -839,7 +839,7 @@ If the issue is corrected, the mailbox may be unlocked using the asynchronous `U
 POST /api/v1/mailboxes/{mailbox-guid}/actions.json
 ```
 
-*Request payload:*
+**Request payload:**
 
 ```
 {
@@ -849,7 +849,7 @@ POST /api/v1/mailboxes/{mailbox-guid}/actions.json
 }
 ```
 
-*Response headers:*
+**Response headers:**
 
 ```
 202 Accepted
@@ -868,7 +868,7 @@ If the mailbox is already provisioned, this call will automatically create an as
 PATCH /api/v1/mailboxes/{mailbox-guid}/packages/{package-guid}/edition.json
 ```
 
-*Request payload:*
+**Request payload:**
 
 ```
 {
@@ -878,20 +878,20 @@ PATCH /api/v1/mailboxes/{mailbox-guid}/packages/{package-guid}/edition.json
 }
 ```
 
-*Response headers for inactive mailboxes:*
+**Response headers for inactive mailboxes:**
 
 ```
 204 No Content
 ```
 
-*Response headers for active mailboxes:*
+**Response headers for active mailboxes:**
 
 ```
 202 Accepted
 Location: /api/v1/mailboxes/{mailbox-guid}/actions/{action-id}
 ```
 
-*Note:* Any valid edition code on the package may be specified. In the above example, a mailbox is upgraded to the premium 100GB option. It could also have been downgraded to a basic 2GB mailbox by using the appropriate edition code, for example `SYN-CMS-BAISC-02`. The valid editions on a package may be verified by using the GET call on the package itself.
+**Note:** Any valid edition code on the package may be specified. In the above example, a mailbox is upgraded to the premium 100GB option. It could also have been downgraded to a basic 2GB mailbox by using the appropriate edition code, for example `SYN-CMS-BAISC-02`. The valid editions on a package may be verified by using the GET call on the package itself.
 
 ### Mailbox Maintenance: Delete a mailbox
 
@@ -905,20 +905,20 @@ To simplify the process, it is not necessary to separately create a `Delete` act
 DELETE /api/v1/mailboxes/{mailbox-guid}.json
 ```
 
-*Response headers for inactive mailboxes:*
+**Response headers for inactive mailboxes:**
 
 ```
 204 No Content
 ```
 
-*Response headers for active mailboxes:*
+**Response headers for active mailboxes:**
 
 ```
 202 Accepted
 Location: /api/v1/mailboxes/{mailbox-guid}/actions/{action-id}
 ```
 
-*Note:* Unlike other asynchronous actions on API objects. The delete action will never present a `finished` state. This is because the one-step mailbox removal process also deletes the actual mailbox record in the case of a successful delete action, deleting the action along with it. Thus, the action may be polled while it is in progress, but when finished, polling it will return a `404 Not Found`, as will any attempt to retrieve mailbox records.
+**Note:** Unlike other asynchronous actions on API objects. The delete action will never present a `finished` state. This is because the one-step mailbox removal process also deletes the actual mailbox record in the case of a successful delete action, deleting the action along with it. Thus, the action may be polled while it is in progress, but when finished, polling it will return a `404 Not Found`, as will any attempt to retrieve mailbox records.
 
 So, for this special use case, the deletion may be assumed to be complete as soon as a poll to the action or the mailbox itself returns not found.
 
@@ -932,7 +932,7 @@ First, the usage action is created.
 POST /api/v1/domains/{domain-guid}/actions.json
 ```
 
-*Request payload:*
+**Request payload:**
 
 ```
 {
@@ -942,7 +942,7 @@ POST /api/v1/domains/{domain-guid}/actions.json
 }
 ```
 
-*Response headers:*
+**Response headers:**
 
 ```
 202 Accepted
@@ -955,7 +955,7 @@ Once the action is completed, the domain GET endpoint can be interrogated for th
 GET /api/v1/domains/{guid}.json
 ```
 
-*Sample response for a CloudMail domain*
+**Sample response for a CloudMail domain**
 
 ```
 {
@@ -979,7 +979,7 @@ GET /api/v1/domains/{guid}.json
 }
 ```
 
-*Sample response for a Securemail domain:*
+**Sample response for a Securemail domain:**
 
 ```
 {
@@ -999,7 +999,7 @@ GET /api/v1/domains/{guid}.json
 }
 ```
 
-*Sample response for a Mail Management Suite domain:*
+**Sample response for a Mail Management Suite domain:**
 
 ```
 {
@@ -1019,7 +1019,7 @@ GET /api/v1/domains/{guid}.json
 }
 ```
 
-*Sample response for a domain where the latest usage report is still being compiled:*
+**Sample response for a domain where the latest usage report is still being compiled:**
 
 ```
 {
