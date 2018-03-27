@@ -11,7 +11,7 @@ The SYNAQ API allows resellers integrated with it to directly manipulate custome
 - [Basic concepts](#basic-concepts)
   * [Products](#products)
   * [Editions](#editions)
-  * [Organisational Units (OUs)](#organisational-units-ous)
+  * [Organisational units (OUs)](#organisational-units-ous)
   * [Packages](#packages)
   * [Domains](#domains)
   * [Mailboxes](#mailboxes)
@@ -20,10 +20,10 @@ The SYNAQ API allows resellers integrated with it to directly manipulate custome
   * [Domain (and mailbox) actions](#domain-and-mailbox-actions)
 - [Prerequisites](#prerequisites)
 - [Online API documentation and development sandbox](#online-api-documentation-and-development-sandbox)
-- [Developer Support](#developer-support)
+- [Developer support](#developer-support)
 - [Advanced use cases](#advanced-use-cases)
 - [Usage examples](#usage-examples)
-  * [Request Authentication](#request-authentication)
+  * [Request authentication](#request-authentication)
   * [OUs](#ous)
     + [Creating a company underneath an existing reseller](#creating-a-company-underneath-an-existing-reseller)
     + [Deleting an organisation](#deleting-an-organisation)
@@ -47,7 +47,7 @@ The SYNAQ API allows resellers integrated with it to directly manipulate custome
   * [Mailboxes](#mailboxes-1)
     + [Creating a mailbox under a domain](#creating-a-mailbox-under-a-domain)
     + [Provisioning a mailbox](#provisioning-a-mailbox)
-    + [Creating a mailbox under a domain and provisioning it immediately.](#creating-a-mailbox-under-a-domain-and-provisioning-it-immediately)
+    + [Creating a mailbox under a domain and provisioning it immediately](#creating-a-mailbox-under-a-domain-and-provisioning-it-immediately)
     + [Updating a mailbox](#updating-a-mailbox)
     + [Suspending a mailbox](#suspending-a-mailbox)
     + [Closing a mailbox](#closing-a-mailbox)
@@ -67,7 +67,7 @@ Products are combinations of physical services sold by SYNAQ. Examples of produc
 
 Most of SYNAQ's products offere different classes or levels of service, to allow the package to be tailored to the end customer's specific requirements and budget. When a package is created, it must be assigned one or more editions, depending on the product. Plan based products (Securemail, Branding, Archive) require one edition. Mailbox based products such as CloudMail and Continuity may have any number of editions assigned to their packages, and individual mailboxes are then assigned to specific editions to determine their class of service.
 
-## Organisational Units (OUs)
+## Organisational units (OUs)
 
 An OU is the most basic structure which can be created by the API. OUs represent a reseller's customers, either as "sub-resellers", who can in turn sell to their own clients, or "companies", which are direct clients of the reseller.
 
@@ -127,7 +127,7 @@ The tool is available on our staging API infrastructure at this URL:
 
 Please log in using your user interface credentials, not your API key. This will be provided along with other staging configuration information.
 
-# Developer Support
+# Developer support
 
 The SYNAQ development team is available to support developers with integration partners via email. Please contact the team directly on <dev@synaq.com> for assistance.
 
@@ -137,7 +137,7 @@ The API supports advanced use cases not covered in this guide. These are normall
 
 # Usage examples
 
-## Request Authentication
+## Request authentication
 
 All requests to the SYNAQ API must be authenticated using SWSS authentication, injected into the HTTP headers. These headers are required in all requests:
 
@@ -729,7 +729,7 @@ POST /api/v1/mailboxes/{mailbox-guid}/actions.json
 Location: /api/v1/mailboxes/{mailbox-guid}/actions/{action-id}
 ```
 
-### Creating a mailbox under a domain and provisioning it immediately.
+### Creating a mailbox under a domain and provisioning it immediately
 
 As a convenience method to simplify the mailbox provisioning workflow, the mailbox creation endpoint also offers the `provision_immediately` flag, as per the domain provisioning workflow. In this case, the API will likewise return a 202 Accepted and a location header referring to the automatically created provisioning action. The GUID of the newly created mailbox may be inferred by parsing the action location.
 
