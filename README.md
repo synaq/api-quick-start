@@ -6,8 +6,6 @@ Updated 2018-03-27
 
 The SYNAQ API allows resellers integrated with it to directly manipulate customer data, and provision and manage SYNAQ services under domains for their customers.
 
-Before getting into concrete usage examples for our various products, we need to define a few basic concepts which apply throughout all API workflows.
-
 ## Contents
 
 - [Basic concepts](#basic-concepts)
