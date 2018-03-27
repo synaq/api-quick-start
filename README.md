@@ -210,7 +210,7 @@ POST /api/v1/ous/{reseller-guid}/subresellers.json
 
 ### Deleting an organisation
 
-If a company no longer has any active packages associated with it, its records may also be deleted form the API using a delete endpoint.
+If a company has no active packages associated with it, its records may deleted form the API using a delete endpoint.
 
 ```
 DELETE /api/v1/ous/{ou-guid}.json
@@ -333,9 +333,9 @@ location: /api/v1/packages/{package-guid}
 
 ### Provisioning a package with all its linked domains
 
-In cases when multiple domains are linked to a package, or where a new package is being added to an existing domain, the API also permits a provision action to be created on a package rather than a domain. The process for doing this is the same as for provisioning actions created directly on domains, but using the package actions endpoints.
+In cases when multiple domains are linked to a package, or where a new package is being added to an existing domain, the API permits a provision action to be created on a package rather than a domain. The process for doing this is the same as for provisioning actions created directly on domains, but using the package actions endpoints.
 
-*Note:* See the domain documentation below for more information on linking packages and domains.
+**Note:** See the domain documentation below for more information on linking packages and domains.
 
 ```
 POST /api/v1/packages/{package-guid}/actions.json
