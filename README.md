@@ -1,48 +1,99 @@
 # SYNAQ API Quick Start Guide
 
-Updated 2018-03-27
+Last updated on 2018-03-27
 
-## Introduction
+# Introduction
 
 The SYNAQ API allows resellers integrated with it to directly manipulate customer data, and provision and manage SYNAQ services under domains for their customers.
 
-## Basic concepts
+# Contents
 
-### Products
+- [Basic concepts](#basic-concepts)
+  * [Products](#products)
+  * [Editions](#editions)
+  * [Organisational Units (OUs)](#organisational-units-ous)
+  * [Packages](#packages)
+  * [Domains](#domains)
+  * [Mailboxes](#mailboxes)
+  * [Service fields](#service-fields)
+  * [Asynchronous actions](#asynchronous-actions)
+  * [Domain (and mailbox) actions](#domain-and-mailbox-actions)
+- [Prerequisites](#prerequisites)
+- [Online API documentation and development sandbox](#online-api-documentation-and-development-sandbox)
+- [Developer Support](#developer-support)
+- [Advanced use cases](#advanced-use-cases)
+- [Usage examples](#usage-examples)
+  * [Request Authentication](#request-authentication)
+  * [OUs](#ous)
+    + [Creating a company underneath an existing reseller](#creating-a-company-underneath-an-existing-reseller)
+    + [Deleting an organisation](#deleting-an-organisation)
+  * [Packages](#packages-1)
+    + [Look up all possible package combinations under a given company](#look-up-all-possible-package-combinations-under-a-given-company)
+    + [Create a new CloudMail package](#create-a-new-cloudmail-package)
+    + [Create a new Securemail Bidirectional package](#create-a-new-securemail-bidirectional-package)
+    + [Create a new Branding package](#create-a-new-branding-package)
+    + [Provisioning a package with all its linked domains](#provisioning-a-package-with-all-its-linked-domains)
+    + [Deleting a package](#deleting-a-package)
+  * [Domains](#domains-1)
+    + [Create a new standalone domain which can be linked to an existing package](#create-a-new-standalone-domain-which-can-be-linked-to-an-existing-package)
+    + [Linking an existing domain to a package](#linking-an-existing-domain-to-a-package)
+    + [Creating a new domain and linking it to an existing package automatically](#creating-a-new-domain-and-linking-it-to-an-existing-package-automatically)
+    + [Configuring the service fields on a domain](#configuring-the-service-fields-on-a-domain)
+    + [Provisioning a domain](#provisioning-a-domain)
+    + [Creating a new domain, linking it to an existing CloudMail package, and provisioning it automatically](#creating-a-new-domain-linking-it-to-an-existing-cloudmail-package-and-provisioning-it-automatically)
+    + [Closing a domain](#closing-a-domain)
+    + [Reactivating a domain](#reactivating-a-domain)
+    + [Deleting a domain](#deleting-a-domain)
+  * [Mailboxes](#mailboxes-1)
+    + [Creating a mailbox under a domain](#creating-a-mailbox-under-a-domain)
+    + [Provisioning a mailbox](#provisioning-a-mailbox)
+    + [Creating a mailbox under a domain and provisioning it immediately.](#creating-a-mailbox-under-a-domain-and-provisioning-it-immediately)
+    + [Updating a mailbox](#updating-a-mailbox)
+    + [Suspending a mailbox](#suspending-a-mailbox)
+    + [Closing a mailbox](#closing-a-mailbox)
+    + [Reactivating a mailbox](#reactivating-a-mailbox)
+    + [Unlocking a mailbox](#unlocking-a-mailbox)
+    + [Changing the edition (class of service) of a mailbox](#changing-the-edition-class-of-service-of-a-mailbox)
+    + [Deleting a mailbox](#deleting-a-mailbox)
+  * [Usage reporting](#usage-reporting)
+
+# Basic concepts
+
+## Products
 
 Products are combinations of physical services sold by SYNAQ. Examples of products include CouldMail, our cloud based email hosting service, Securemail, our email security service, etc. Products are purchased via the API by creating packages, as described below. A package is an instance of a given product.
 
-### Editions
+## Editions
 
 Most of SYNAQ's products offere different classes or levels of service, to allow the package to be tailored to the end customer's specific requirements and budget. When a package is created, it must be assigned one or more editions, depending on the product. Plan based products (Securemail, Branding, Archive) require one edition. Mailbox based products such as CloudMail and Continuity may have any number of editions assigned to their packages, and individual mailboxes are then assigned to specific editions to determine their class of service.
 
-### Organisational Units (OUs)
+## Organisational Units (OUs)
 
 An OU is the most basic structure which can be created by the API. OUs represent a reseller's customers, either as "sub-resellers", who can in turn sell to their own clients, or "companies", which are direct clients of the reseller.
 
 The API allows creation of organisational units, under which packages and domains must then be created and linked to each other in order to provision services.
 
-### Packages
+## Packages
 
 A package is an instance of a given SYNAQ product under a particular organisational unit. For example, if a client wishes to buy the SYNAQ Securemail product, an OU would be created to represent that client, and then a SYNAQ Securemail package would be created under that OU.
 
 When creating packages, one or more editions may be specified, to determine the actual class or level of service offered under the package.
 
-### Domains
+## Domains
 
 A domain is a representation in the API of an actual customer domain. Domains exist underneath OUs, and must be linked to one or more packages in order to be provisioned. The packages linked to a given domain will determine which actual services are provisioned for that domain on the SYNAQ platform.
 
-### Mailboxes
+## Mailboxes
 
 For products where mailboxes can be managed directly via the API (SYNAQ CloudMail and SYNAQ Continuity at the time of this writing), mailboxes in the API represent actual mailboxes on those services. The API allows creation of mailboxes underneath domains, and then allows the mailboxes to be provisioned onto the actual backing services on the SYNAQ platform.
 
-### Service fields
+## Service fields
 
 Some SYNAQ products require additional configuration for provisioning to be possible. This includes information like the delivery destination to use for inbound Securemail domains, the authentication mechanism for outbound Securemail domains, the authentication mechanism to use for Branding domains, etc.
 
 Service fields are managed via the API through a PATCH call made on a domain object. This must be done after all desired packages are linked to the domain, and before attempting to provision the domain though a provisioning action.
 
-### Asynchronous actions
+## Asynchronous actions
 
 The SYNAQ API abstracts a powerful services bus mechanism used on the SYNAQ platform to queue and complete actual provisioning tasks on the services on our platform. As some tasks may require a short time to complete, or wait in the queue at particularly busy times, all of these services bus tasks are represented in the API by asynchronous actions.
 
@@ -52,19 +103,19 @@ When asynchronous actions are created, the API returns their location to the cli
 
 Full documentation on the use of asynchronous actions may be found in the usage example section of this document.
 
-### Domain (and mailbox) actions
+## Domain (and mailbox) actions
 
 The most important asynchronous actions in the API are actions on domains and mailboxes. These can be triggered explicitly by creating them on the domain or mailbox actions endpoint in the API, and are sometimes triggered implicitly by certain endpoints, or by specific configuration settings on some endpoints. In cases where this may happen, this document will highlight that possibility.
 
 The most important and frequently used domain and mailbox action is the `Provision` action. This initiates the steps needed to actually provision an already configured domain (or mailbox) on SYNAQ's platform.
 
-## Prerequisites
+# Prerequisites
 
 To use the API, an integrator requires the top level GUID assigned to their reseller, and a valid API key. These will be provided by SYNAQ upon request. For new resellers, we will generally only allocate credentials for our staging environment, enabling the integrator to develop and test their integration client without the possibility of affecting production services or incurring billing.
 
 Once the integrator is satisfied that their integration is stable and ready to serve their customers, we will provide access credentials for the production API.
 
-## Online API documentation and development sandbox
+# Online API documentation and development sandbox
 
 SYNAQ supplies an online API documentation and sandbox tool. The tool lists all possible calls to the SYNAQ API, together with their expected payloads, and possible responses.
 
@@ -76,13 +127,17 @@ The tool is available on our staging API infrastructure at this URL:
 
 Please log in using your user interface credentials, not your API key. This will be provided along with other staging configuration information.
 
-## Developer Support
+# Developer Support
 
 The SYNAQ development team is available to support developers with integration partners via email. Please contact the team directly on <dev@synaq.com> for assistance.
 
-## Usage examples
+# Advanced use cases
 
-### Request Authentication
+The API supports advanced use cases not covered in this guide. These are normally either for use by SYNAQ internally, or were developed for specific integrators. They are not covered here for the sake of brevity, but are available to all integrators on request. Please contact SYNAQ for more information on these use cases.
+
+# Usage examples
+
+## Request Authentication
 
 All requests to the SYNAQ API must be authenticated using SWSS authentication, injected into the HTTP headers. These headers are required in all requests:
 
@@ -105,7 +160,9 @@ $salt = microtime(true) * 10000;
 $hash = sha1($username . $apiKey . $salt);
 ```
 
-### OU Creation: Creating a company underneath an existing reseller
+## OUs
+
+### Creating a company underneath an existing reseller
 
 Create a company titled "Acme Ltd", belonging to the authenticated reseller.
 
@@ -151,7 +208,23 @@ Visiting the location will show the basic OU information. The OU GUID can also b
 POST /api/v1/ous/{reseller-guid}/subresellers.json
 ```
 
-### Package Creation: Look up all possible package combinations under a given company
+### Deleting an organisation
+
+If a company no longer has any active packages associated with it, its records may also be deleted form the API using a delete endpoint.
+
+```
+DELETE /api/v1/ous/{ou-guid}.json
+```
+
+**Response headers:**
+
+```
+204 No Content
+```
+
+## Packages
+
+### Look up all possible package combinations under a given company
 
 ```
 OPTIONS /api/v1/ous/{company-guid}/packages.json
@@ -161,7 +234,7 @@ The response will show all possible product and edition combinations for new pac
 
 This response can be used to dynamically generate forms with available products on your client system.
 
-### Package Creation: Create a new CloudMail package
+### Create a new CloudMail package
 
 Create an instance of the CloudMail product with 2 mailbox types; Basic 2GB and Premium 25GB
 
@@ -198,7 +271,7 @@ location: /api/v1/packages/{package-guid}
 
 For all other products, an edition must be selected at package creation time.
 
-### Package Creation: Create a new Securemail Bidirectional package
+### Create a new Securemail Bidirectional package
 
 Create a Securemail bidirectional package, note the edition code "SYN-PIN-SEC-BOTH". Securemail is a plan based product, so an edition code must always be specified.
 
@@ -228,7 +301,7 @@ POST /api/v1/ous/{company-guid}/packages.json
 location: /api/v1/packages/{package-guid}
 ```
 
-### Package Creation: Create a new Branding package
+### Create a new Branding package
 
 Create a Branding package, note the edition code "SYN-PIN-BRD", Branding is a plan based product, so must always have an edition code specified, similar to Securemail.
 
@@ -258,7 +331,50 @@ POST /api/v1/ous/{company-guid}/packages.json
 location: /api/v1/packages/{package-guid}
 ```
 
-### Domain Creation: Create a new standalone domain which can be linked to an existing package
+### Provisioning a package with all its linked domains
+
+In cases when multiple domains are linked to a package, or where a new package is being added to an existing domain, the API also permits a provision action to be created on a package rather than a domain. The process for doing this is the same as for provisioning actions created directly on domains, but using the package actions endpoints.
+
+*Note:* See the domain documentation below for more information on linking packages and domains.
+
+```
+POST /api/v1/packages/{package-guid}/actions.json
+```
+
+**Request payload:**
+
+```
+{
+	"action": {
+		"action": "Provision"
+	}
+}
+```
+
+**Response headers:**
+
+```
+202 Accepted
+location: /api/v1/packages/{package-guid}/actions/{action-id}
+```
+
+### Deleting a package
+
+If all of the domains on a package are either in the `deleted` state, or if the package has no more domain records linked to it, the package itself may be deleted by a `DELETE` endpoint.
+
+```
+DELETE /api/v1/packages/{package-guid}.json
+```
+
+**Response headers:**
+
+```
+204 No Content
+```
+
+## Domains 
+
+### Create a new standalone domain which can be linked to an existing package
 
 ```
 POST /api/v1/ous/{company-guid}/domains.json
@@ -281,7 +397,7 @@ POST /api/v1/ous/{company-guid}/domains.json
 location: /api/v1/domains/{domain-guid}
 ```
 
-### Domain Creation: Linking an existing domain to a package
+### Linking an existing domain to a package
 
 Before packages or domains can be provisioned, or have their service fields configured for products where that is required, they must be linked in the API.
 
@@ -295,7 +411,7 @@ LINK /api/v1/packages/{package-guid}/domains/{domain-guid}.json
 204 No Content
 ```
 
-### Domain Creation: Creating a new domain and linking it to an existing package automatically
+### Creating a new domain and linking it to an existing package automatically
 
 To simplify the process of creating domains and linking them in implementations where a package is likely to only require a single domain, the API provides a convenience method where a domain is created underneath a package.
 
@@ -322,7 +438,7 @@ POST /api/v1/packages/{package-guid}/domains.json
 location: /api/v1/domains/{domain-guid}
 ```
 
-### Domain Creation: Configuring the service fields on a domain
+### Configuring the service fields on a domain
 
 Most products require additional service information to be configured before a domain can be provisioned. Which information is required is determined by the package(s) linked to the domain, so linking must be completed before these steps.
 
@@ -377,7 +493,7 @@ PATCH /api/v1/domains/{domain-guid}/servicefields.json
 204 No Content
 ```
 
-### Domain Creation: Provisioning a domain
+### Provisioning a domain
 
 Once service configuration information has been populated in the service fields, the domain may be provisioned using an asynchronous `Provision` action as described in the basic concepts section above.
 
@@ -420,34 +536,9 @@ GET /api/v1/domains/{domain-guid}/actions/{action-id}
 }
 ```
 
-### Domain Creation: Provisioning a package
-
-In cases when multiple domains are linked to a package, or where a new package is being added to an existing domain, the API also permits a provision action to be created on a package rather than a domain. The process for doing this is the same as for provisioning actions created directly on domains, but using the package actions endpoints.
-
-```
-POST /api/v1/packages/{package-guid}/actions.json
-```
-
-**Request payload:**
-
-```
-{
-	"action": {
-		"action": "Provision"
-	}
-}
-```
-
-**Response headers:**
-
-```
-202 Accepted
-location: /api/v1/packages/{package-guid}/actions/{action-id}
-```
-
 The polling process for actions on packages is similar to that shown for domains above.
 
-### Domain Creation: Creating a new domain, linking it to an existing CloudMail package, and provisioning it automatically
+### Creating a new domain, linking it to an existing CloudMail package, and provisioning it automatically
 
 For the CloudMail product, no service field configuration is required, so to streamline the provisioning process even further, especially for integrations where only CloudMail is required, the API provides a special `provision_immediately` flag on the endpoint which allows domains to be created and linked to a package.
 
@@ -479,7 +570,7 @@ POST /api/v1/packages/{package-guid}/domains.json
 location: /api/v1/domains/{domain-guid}/actions/{action-id}
 ```
 
-### Domain maintenance: Closing a domain
+### Closing a domain
 
 In some cases, an integrator may wish to temporarily suspend the operation of a domain. This is usually needed by integrators who want to enforce credit control on end customers by temporarily denying service, without completely tearing down the provisioned services.
 
@@ -508,7 +599,7 @@ POST /api/v1/packages/{package-guid}/actions.json
 location: /api/v1/packages/{package-guid}/actions/{action-id}
 ```
 
-### Domain maintenance: Reactivating a domain
+### Reactivating a domain
 
 A closed domain may be reactivated (returned to service) by using the asynchronous `Activate` action.
 
@@ -533,7 +624,7 @@ POST /api/v1/packages/{package-guid}/actions.json
 location: /api/v1/packages/{package-guid}/actions/{action-id}
 ```
 
-### Domain maintenance: Deleting a domain
+### Deleting a domain
 
 If an end customer has cancelled service for a domain, and an integrator wishes to remove it from service, this may be achieved by first creating an asynchronous `Delete` action for the domain, and then using the `DELETE` endpoint on the domain itself to remove all records of it.
 
@@ -576,35 +667,9 @@ DELETE /api/v1/domains/{domain-guid}.json
 
 * For products which expose mailboxes directly as API objects, such as CloudMail and Continuity, a domain may not be deleted if it still containeds mailboxes in provisioned states. For this reason, the API will reject an asynchronous `Delete` action on any domain where provisioned mailboxes are still present. To delete such a domain, the mailboxes must be deleted first. Please refer to the mailbox management section below.
 
-### Package maintenance: Deleting a package
+## Mailboxes
 
-If all of the domains on a package are either in the `deleted` state, or if the package has no more domain records linked to it, the package itself may be deleted by a `DELETE` endpoint.
-
-```
-DELETE /api/v1/packages/{package-guid}.json
-```
-
-**Response headers:**
-
-```
-204 No Content
-```
-
-### Organisation Maintenance: Deleting an organisation
-
-If a company no longer has any active packages associated with it, its records may also be deleted form the API using a delete endpoint.
-
-```
-DELETE /api/v1/ous/{ou-guid}.json
-```
-
-**Response headers:**
-
-```
-204 No Content
-```
-
-### Mailbox Creation: Creating a mailbox under a domain
+### Creating a mailbox under a domain
 
 For products where mailboxes are directly exposed via the API, such as CloudMail and Continuity, a mailbox may be created and provisioned under a domain once the domain has been provisioned.
 
@@ -637,7 +702,7 @@ POST /api/v1/domains/{domain-guid}/mailboxes.json
 Location: /api/v1/mailboxes/{mailbox-guid}
 ```
 
-### Mailbox Creation: Provisioning a mailbox
+### Provisioning a mailbox
 
 Once created under a domain, a mailbox must be provisioned using an asynchronous `Provision` action before it will be available.
 
@@ -664,7 +729,7 @@ POST /api/v1/mailboxes/{mailbox-guid}/actions.json
 Location: /api/v1/mailboxes/{mailbox-guid}/actions/{action-id}
 ```
 
-### Mailbox Creation: Creating a mailbox under a domain and provisioning it immediately.
+### Creating a mailbox under a domain and provisioning it immediately.
 
 As a convenience method to simplify the mailbox provisioning workflow, the mailbox creation endpoint also offers the `provision_immediately` flag, as per the domain provisioning workflow. In this case, the API will likewise return a 202 Accepted and a location header referring to the automatically created provisioning action. The GUID of the newly created mailbox may be inferred by parsing the action location.
 
@@ -693,7 +758,7 @@ POST /api/v1/domains/{domain-guid}/mailboxes.json
 Location: /api/v1/mailboxes/{mailbox-guid}/actions/{action-id}
 ```
 
-### Mailbox Maintenance: Updating a mailbox
+### Updating a mailbox
 
 Occasionally, it may be necessary to update the details of a mailbox, such as display name, the mailbox password, forwarding address, etc.
 
@@ -728,7 +793,7 @@ PATCH /api/v1/mailboxes/{mailbox-guid}.json
 Location: /api/v1/mailboxes/{mailbox-guid}/actions/{action-id}
 ```
 
-### Mailbox Maintenance: Suspending a mailbox
+### Suspending a mailbox
 
 As a credit control measure, or to curb abusive behaviour, service to a single mailbox may be partially suspended via the API. A suspended mailbox will still receive mail destined for it, but will not be accessible to the end user.
 
@@ -755,7 +820,7 @@ POST /api/v1/mailboxes/{mailbox-guid}/actions.json
 Location: /api/v1/mailboxes/{mailbox-guid}/actions/{action-id}
 ```
 
-### Mailbox Maintenance: Closing a mailbox
+### Closing a mailbox
 
 Closing a mailbox is a more severe form of service suspension. A closed mailbox will not be accessible to its end user, and mail delivery destined for the mailbox will also be rejected, resulting in mail destined for a closed mailbox bouncing. The existing contents of the mailbox are preserved. This may be employed as a more severe credit control or abuse mitigation measure, and also as a "soft delete" in cases where an end user has cancelled service, but the integrator wishes to preserve the data in their mailbox temporarily before finally deleting it.
 
@@ -780,7 +845,7 @@ POST /api/v1/mailboxes/{mailbox-guid}/actions.json
 Location: /api/v1/mailboxes/{mailbox-guid}/actions/{action-id}
 ```
 
-### Mailbox Maintenance: Reactivating a mailbox
+### Reactivating a mailbox
 
 A mailbox may be returned from either the suspended or closed states by creating an asynchronous `Activate` action.
 
@@ -805,7 +870,7 @@ POST /api/v1/mailboxes/{mailbox-guid}/actions.json
 Location: /api/v1/mailboxes/{mailbox-guid}/actions/{action-id}
 ```
 
-### Mailbox Maintenance: Unlocking a mailbox
+### Unlocking a mailbox
 
 In certain cases, SYNAQ may temporarily restrict access to a mailbox as an emergency measure to combat abuse being committed using the mailbox. In these cases, the mailbox will show the `suspended` state on normal inspection, but also expose specific fields indicating the reason for the lock.
 
@@ -856,7 +921,7 @@ POST /api/v1/mailboxes/{mailbox-guid}/actions.json
 Location: /api/v1/mailboxes/{mailbox-guid}/actions/{action-id}
 ```
 
-### Mailbox Maintenance: Changing the edition (class of service) of a mailbox
+### Changing the edition (class of service) of a mailbox
 
 From time to time, it may be necessary to change the package edition associated with a mailbox. This has the effect of also changing the actual class of service of a provisioned mailbox.
 
@@ -893,7 +958,7 @@ Location: /api/v1/mailboxes/{mailbox-guid}/actions/{action-id}
 
 **Note:** Any valid edition code on the package may be specified. In the above example, a mailbox is upgraded to the premium 100GB option. It could also have been downgraded to a basic 2GB mailbox by using the appropriate edition code, for example `SYN-CMS-BAISC-02`. The valid editions on a package may be verified by using the GET call on the package itself.
 
-### Mailbox Maintenance: Delete a mailbox
+### Deleting a mailbox
 
 If a mailbox is no longer in use and the integrator wishes to remove it entirely from services, the mailbox may be deleted using the `DELETE` call in the API. Take note that this automatically creates an asynchronous `Delete` action, which may be polled until the deletion is complete.
 
@@ -922,7 +987,7 @@ Location: /api/v1/mailboxes/{mailbox-guid}/actions/{action-id}
 
 So, for this special use case, the deletion may be assumed to be complete as soon as a poll to the action or the mailbox itself returns not found.
 
-### Billing: Request a usage count for a domain
+## Usage reporting
 
 In order to accurately bill an end customer for usage on a given domain, or provide them with projected billing numbers based on their current usage, an integrator may request a usage report via the API. This is a two step process. First, an asynchronous `Usage` action is created on the domain. Once that action completes, the results may be retrieved from the normal GET endpoint on the domain.
 
@@ -1031,7 +1096,3 @@ GET /api/v1/domains/{guid}.json
 	}
 }
 ```
-
-## Advanced use cases
-
-The API supports advanced use cases not covered in this documentation. These are normally either for use by SYNAQ internally, or were developed for specific integrators. They are not covered here for the sake of brevity, but are available to all integrators on request. Please contact SYNAQ for more information on these use cases.
