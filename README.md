@@ -210,7 +210,7 @@ POST /api/v1/ous/{reseller-guid}/subresellers.json
 
 ### Deleting an organisation
 
-If a company has no active packages associated with it, its records may deleted form the API using a delete endpoint.
+If a company has no active packages associated with it, its records may be deleted form the API using a delete endpoint.
 
 ```
 DELETE /api/v1/ous/{ou-guid}.json
