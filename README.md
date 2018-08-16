@@ -1,6 +1,6 @@
 # SYNAQ API Quick Start Guide
 
-Last updated on 2018-03-27
+Valid for version 6.0 (2018-08-16) and above of the SYNAQ API, last updated 2018-08-16.
 
 # Introduction
 
@@ -18,6 +18,7 @@ The SYNAQ API allows resellers integrated with it to directly manipulate custome
   * [Service fields](#service-fields)
   * [Asynchronous actions](#asynchronous-actions)
   * [Domain (and mailbox) actions](#domain-and-mailbox-actions)
+  * [Partial Cancellations](#partial-cancellations)
 - [Prerequisites](#prerequisites)
 - [Online API documentation and development sandbox](#online-api-documentation-and-development-sandbox)
 - [Developer support](#developer-support)
@@ -108,6 +109,18 @@ Full documentation on the use of asynchronous actions may be found in the usage 
 The most important asynchronous actions in the API are actions on domains and mailboxes. These can be triggered explicitly by creating them on the domain or mailbox actions endpoint in the API, and are sometimes triggered implicitly by certain endpoints, or by specific configuration settings on some endpoints. In cases where this may happen, this document will highlight that possibility.
 
 The most important and frequently used domain and mailbox action is the `Provision` action. This initiates the steps needed to actually provision an already configured domain (or mailbox) on SYNAQ's platform.
+
+## Partial Cancellations
+
+Starting in version 6.0 of the API, released on 2018-08-16, the API supports partial product cancellations. This is the act of removing a specific package from an active domain, and consequently removing the backing services which were only needed for that package, while leaving any other packages and services on the domain in place.
+
+The workflow for partial cancellations entails the following:
+
+* Unlink the domain from the package which is no longer desired
+* Optionally update the domain's service fields if required (See [Configuring the service fields on a domain](configuring-the-service-fields-on-a-domain))
+* Optionally refresh the domain using the Refresh action if its services are in a stale state.
+
+Detailed documentation for each of these steps is available at the referenced documentation sections.
 
 # Prerequisites
 
@@ -473,7 +486,7 @@ This shows required fields for the selected package combination, and their curre
 PATCH /api/v1/domains/{domain-guid}/servicefields.json
 ```
 
-**Reqeust payload:**
+**Request payload:**
 
 ```
 {
@@ -666,6 +679,64 @@ DELETE /api/v1/domains/{domain-guid}.json
 * The `DELETE` action is only permitted for domains in the `inactive` or `deleted` states. A domain in any other state can not be deleted from the API's records.
 
 * For products which expose mailboxes directly as API objects, such as CloudMail and Continuity, a domain may not be deleted if it still containeds mailboxes in provisioned states. For this reason, the API will reject an asynchronous `Delete` action on any domain where provisioned mailboxes are still present. To delete such a domain, the mailboxes must be deleted first. Please refer to the mailbox management section below.
+
+### Unlinking a domain from a package
+
+*TODO: Link in TOC and in partial cancellations primer in basic concepts*
+
+Domains can also be unlinked from packages to which they are already linked. 
+
+**Important Note on Partial Cancellation Workflows:**
+
+Depending on wether the domain is currently provisioned on backing services, and on which services are affected by the removal of the domain from the package, a few different possible workflows may need to be followed.
+
+* If the domain is currently inactive, no further action is needed.
+* If the domain is active and some of the backing services were only related to the package being removed, an automated Prune action will be initiated to remove those services.
+* If the domain is active and some services overlap between the product being removed, and other products which are unaffected, the domain will enter a stale state, whereupon service fields will need to be updated if required, and the domain will need to be refreshed using a Refresh domain action.
+* In some rare cases, following the automatic Prune action, the domain may still have overlapping services, and will enter the stale state, where a service field update is required, followed by a Refresh action.
+
+For all of these possibilites, the initial request is the same:
+
+```
+UNLINK /api/v1/packages/{package-guid}/domains/{domain-guid}.json
+```
+
+**Response headers for inactive domains:**
+
+```
+204 No Content
+```
+
+**Response headers for active domains with overlapping services:**
+
+```
+204 No Content
+```
+
+**Important**
+
+It is vital that the client check the state of the domain after receiving a this response on an active domain. It is very likely that the domain has now entered a stale state, and needs to be refreshed.
+
+The state can be checked using the normal domain read call:
+
+```
+GET /api/v1/domains/{domainGuid}.json
+```
+
+The client should then evaluate the `state` property in the returned JSON object. If the state is `inactive` or `active`, no further action is needed. If the state is `stale`, an update of service fields and a Refresh action are needed.
+
+**Response headers for active domains with services which are no longer needed:**
+
+```
+202 Accepted
+location: /api/v1/domains/{domain-guid}/actions/{action-id}
+```
+
+**Important**
+
+If this response is received, the client must poll the action which was automatically returned. Use the normal polling logic described in this document. If the action fails, the client must report a high priority error message to the user. If the action completes, the client must then check the status of the domain as described in the example directly before this one.
+
+As with the previous example, the domain will now either be in the `stale` or `active` state.
 
 ## Mailboxes
 
