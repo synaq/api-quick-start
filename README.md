@@ -1,6 +1,6 @@
 # SYNAQ API Quick Start Guide
 
-Valid for version 6.0 (2018-08-16) and above of the SYNAQ API, last updated 2018-08-16.
+Valid for version 6.0 (2018-08-16) and above of the SYNAQ API, last updated 2018-08-20.
 
 # Introduction
 
@@ -45,6 +45,8 @@ The SYNAQ API allows resellers integrated with it to directly manipulate custome
     + [Closing a domain](#closing-a-domain)
     + [Reactivating a domain](#reactivating-a-domain)
     + [Deleting a domain](#deleting-a-domain)
+    + [Unlinking a domain from a package](#unlinking-a-domain-from-a-package)
+    + [Refreshing a domain](#refreshing-a-domain)
   * [Mailboxes](#mailboxes-1)
     + [Creating a mailbox under a domain](#creating-a-mailbox-under-a-domain)
     + [Provisioning a mailbox](#provisioning-a-mailbox)
@@ -57,6 +59,12 @@ The SYNAQ API allows resellers integrated with it to directly manipulate custome
     + [Changing the edition (class of service) of a mailbox](#changing-the-edition-class-of-service-of-a-mailbox)
     + [Deleting a mailbox](#deleting-a-mailbox)
   * [Usage reporting](#usage-reporting)
+- [Full workflow examples for advanced operations](#full-workflow-examples-for-advanced-operations)
+  - [Polling an asynchronous action](#polling-an-asynchronous-action)
+  - [Cancelling one package on a domain](#cancelling-one-package-on-a-domain)
+    - [Cancel a Securemail outbound bolt-on package on a CloudMail domain](#cancel-a-Securemail-outbound-bolt-on-package-on-a-cloudmail-domain)
+    - [Cancel a Branding package on a domain which also has Securemail](#cancel-a-Branding-package-on-a-domain-which-also-has-securemail)
+    - [Cancel an Archive package on a domain which also has Securemail](#cancel-an-archive-package-on-a-domain-which-also-has-securemail)
 
 # Basic concepts
 
@@ -66,7 +74,7 @@ Products are combinations of physical services sold by SYNAQ. Examples of produc
 
 ## Editions
 
-Most of SYNAQ's products offere different classes or levels of service, to allow the package to be tailored to the end customer's specific requirements and budget. When a package is created, it must be assigned one or more editions, depending on the product. Plan based products (Securemail, Branding, Archive) require one edition. Mailbox based products such as CloudMail and Continuity may have any number of editions assigned to their packages, and individual mailboxes are then assigned to specific editions to determine their class of service.
+Most of SYNAQ's products offer different classes or levels of service, to allow the package to be tailored to the end customer's specific requirements and budget. When a package is created, it must be assigned one or more editions, depending on the product. Plan based products (Securemail, Branding, Archive) require one edition. Mailbox based products such as CloudMail and Continuity may have any number of editions assigned to their packages, and individual mailboxes are then assigned to specific editions to determine their class of service.
 
 ## Organisational units (OUs)
 
@@ -110,6 +118,8 @@ The most important asynchronous actions in the API are actions on domains and ma
 
 The most important and frequently used domain and mailbox action is the `Provision` action. This initiates the steps needed to actually provision an already configured domain (or mailbox) on SYNAQ's platform.
 
+For detailed instructions on how to deal with asynchronous actions, see [Polling an asynchronous action](#polling-an-asynchronous-action)
+
 ## Partial Cancellations
 
 Starting in version 6.0 of the API, released on 2018-08-16, the API supports partial product cancellations. This is the act of removing a specific package from an active domain, and consequently removing the backing services which were only needed for that package, while leaving any other packages and services on the domain in place.
@@ -117,10 +127,17 @@ Starting in version 6.0 of the API, released on 2018-08-16, the API supports par
 The workflow for partial cancellations entails the following:
 
 * Unlink the domain from the package which is no longer desired
-* Optionally update the domain's service fields if required (See [Configuring the service fields on a domain](configuring-the-service-fields-on-a-domain))
+  (See [Unlinking a domain from a package](#unlinking-a-domain-from-a-package))
+* Optionally update the domain's service fields if required
+  (See [Configuring the service fields on a domain](#configuring-the-service-fields-on-a-domain))
 * Optionally refresh the domain using the Refresh action if its services are in a stale state.
+  (See [Refreshing a domain](#refreshing-a-domain))
 
 Detailed documentation for each of these steps is available at the referenced documentation sections.
+
+A series of full example workflows for common use cases of this feature are also available in the full workflow example section at the end of this document.
+
+Please see [Cancelling one package on a domain](#cancelling-one-package-on-a-domain)
 
 # Prerequisites
 
@@ -204,7 +221,7 @@ POST /api/v1/ous/{reseller-guid}/companies.json
 }
 ```
 
-The `title` field on the OU, and `line_1`, `city`, `postal_code` and `country` on the `physical_address` object are all requered fields. All other fields are optional.
+The `title` field on the OU, and `line_1`, `city`, `postal_code` and `country` on the `physical_address` object are all required fields. All other fields are optional.
 
 **Response headers:**
 
@@ -243,7 +260,7 @@ DELETE /api/v1/ous/{ou-guid}.json
 OPTIONS /api/v1/ous/{company-guid}/packages.json
 ```
 
-The response will show all possible product and edition combinations for new packages under the given company. Due to this response being quite detailed and lengthy, it has been ommitted from this document. Please use the API sandbox tool to generate a sample response for your own test company.
+The response will show all possible product and edition combinations for new packages under the given company. Due to this response being quite detailed and lengthy, it has been omitted from this document. Please use the API sandbox tool to generate a sample response for your own test company.
 
 This response can be used to dynamically generate forms with available products on your client system.
 
@@ -371,6 +388,8 @@ POST /api/v1/packages/{package-guid}/actions.json
 location: /api/v1/packages/{package-guid}/actions/{action-id}
 ```
 
+(See [Polling an asynchronous action](#polling-an-asynchronous-action))
+
 ### Deleting a package
 
 If all of the domains on a package are either in the `deleted` state, or if the package has no more domain records linked to it, the package itself may be deleted by a `DELETE` endpoint.
@@ -457,7 +476,7 @@ Most products require additional service information to be configured before a d
 
 To determine which fields require information, the general use GET endpoint for domains may be used with the given domain GUID, and the `fields` object may be inspected.
 
-**Note:** The endpoint also exposes a legacy `service_fields` object, which was used in a previous mechanism for retreiving information passed back from the services. Please do no confuse that object for `fields` as described above.
+**Note:** The endpoint also exposes a legacy `service_fields` object, which was used in a previous mechanism for retrieving information passed back from the services. Please do no confuse that object for `fields` as described above.
 
 ```
 GET /api/v1/domains/{domain-guid}.json
@@ -551,6 +570,8 @@ GET /api/v1/domains/{domain-guid}/actions/{action-id}
 
 The polling process for actions on packages is similar to that shown for domains above.
 
+(See [Polling an asynchronous action](#polling-an-asynchronous-action))
+
 ### Creating a new domain, linking it to an existing CloudMail package, and provisioning it automatically
 
 For the CloudMail product, no service field configuration is required, so to streamline the provisioning process even further, especially for integrations where only CloudMail is required, the API provides a special `provision_immediately` flag on the endpoint which allows domains to be created and linked to a package.
@@ -583,6 +604,8 @@ POST /api/v1/packages/{package-guid}/domains.json
 location: /api/v1/domains/{domain-guid}/actions/{action-id}
 ```
 
+(See [Polling an asynchronous action](#polling-an-asynchronous-action))
+
 ### Closing a domain
 
 In some cases, an integrator may wish to temporarily suspend the operation of a domain. This is usually needed by integrators who want to enforce credit control on end customers by temporarily denying service, without completely tearing down the provisioned services.
@@ -612,6 +635,8 @@ POST /api/v1/packages/{package-guid}/actions.json
 location: /api/v1/packages/{package-guid}/actions/{action-id}
 ```
 
+(See [Polling an asynchronous action](#polling-an-asynchronous-action))
+
 ### Reactivating a domain
 
 A closed domain may be reactivated (returned to service) by using the asynchronous `Activate` action.
@@ -636,6 +661,8 @@ POST /api/v1/packages/{package-guid}/actions.json
 202 Accepted
 location: /api/v1/packages/{package-guid}/actions/{action-id}
 ```
+
+(See [Polling an asynchronous action](#polling-an-asynchronous-action))
 
 ### Deleting a domain
 
@@ -662,6 +689,8 @@ POST /api/v1/domains/{domain-guid}/actions.json
 location: /api/v1/domains/{domain-guid}/actions/{action-id}
 ```
 
+(See [Polling an asynchronous action](#polling-an-asynchronous-action))
+
 Once the action reports a state of `finished`, the domain will be in the `deleted` state, and thus eligible for final deletion from the API records using the `DELETE` endpoint.
 
 ```
@@ -678,11 +707,9 @@ DELETE /api/v1/domains/{domain-guid}.json
 
 * The `DELETE` action is only permitted for domains in the `inactive` or `deleted` states. A domain in any other state can not be deleted from the API's records.
 
-* For products which expose mailboxes directly as API objects, such as CloudMail and Continuity, a domain may not be deleted if it still containeds mailboxes in provisioned states. For this reason, the API will reject an asynchronous `Delete` action on any domain where provisioned mailboxes are still present. To delete such a domain, the mailboxes must be deleted first. Please refer to the mailbox management section below.
+* For products which expose mailboxes directly as API objects, such as CloudMail and Continuity, a domain may not be deleted if it still contains mailboxes in provisioned states. For this reason, the API will reject an asynchronous `Delete` action on any domain where provisioned mailboxes are still present. To delete such a domain, the mailboxes must be deleted first. Please refer to the mailbox management section below.
 
 ### Unlinking a domain from a package
-
-*TODO: Link in TOC and in partial cancellations primer in basic concepts*
 
 Domains can also be unlinked from packages to which they are already linked. 
 
@@ -695,7 +722,7 @@ Depending on wether the domain is currently provisioned on backing services, and
 * If the domain is active and some services overlap between the product being removed, and other products which are unaffected, the domain will enter a stale state, whereupon service fields will need to be updated if required, and the domain will need to be refreshed using a Refresh domain action.
 * In some rare cases, following the automatic Prune action, the domain may still have overlapping services, and will enter the stale state, where a service field update is required, followed by a Refresh action.
 
-For all of these possibilites, the initial request is the same:
+For all of these possibilities, the initial request is the same:
 
 ```
 UNLINK /api/v1/packages/{package-guid}/domains/{domain-guid}.json
@@ -715,15 +742,20 @@ UNLINK /api/v1/packages/{package-guid}/domains/{domain-guid}.json
 
 **Important**
 
-It is vital that the client check the state of the domain after receiving a this response on an active domain. It is very likely that the domain has now entered a stale state, and needs to be refreshed.
-
+It is vital that the client check the state of the domain after receiving this response on an active domain. It is very likely that the domain has now entered a stale state, and needs to be refreshed.
+						
 The state can be checked using the normal domain read call:
 
 ```
 GET /api/v1/domains/{domainGuid}.json
 ```
 
-The client should then evaluate the `state` property in the returned JSON object. If the state is `inactive` or `active`, no further action is needed. If the state is `stale`, an update of service fields and a Refresh action are needed.
+The client should then evaluate the `state` property in the returned JSON object. If the state is `inactive` or `active`, no further action is needed.
+
+If the state is `stale`, an update of service fields and a Refresh action are needed. See these documentation sections for more information:
+
+* [Configuring the service fields on a domain](#configuring-the-service-fields-on-a-domain)
+* [Refreshing a domain](#refreshing-a-domain)
 
 **Response headers for active domains with services which are no longer needed:**
 
@@ -732,11 +764,44 @@ The client should then evaluate the `state` property in the returned JSON object
 location: /api/v1/domains/{domain-guid}/actions/{action-id}
 ```
 
+(See [Polling an asynchronous action](#polling-an-asynchronous-action))
+
 **Important**
 
 If this response is received, the client must poll the action which was automatically returned. Use the normal polling logic described in this document. If the action fails, the client must report a high priority error message to the user. If the action completes, the client must then check the status of the domain as described in the example directly before this one.
 
 As with the previous example, the domain will now either be in the `stale` or `active` state.
+
+### Refreshing a domain
+
+If a domain has entered the `state` state, some of its services need to be refreshed. This will only happen after a partial cancellation (see [Partial Cancellations](#partial-cancellations) and [Unlinking a domain from a package](#unlinking-a-domain-from-a-package)) where some services were overlapping.
+
+After updating the domain's service fields (see [Configuring the service fields on a domain](#configuring-the-service-fields-on-a-domain)), the Refresh action should be sent for the domain.
+
+```
+POST /api/v1/domains/{domain-guid}/actions.json
+```
+
+**Request payload:**
+
+```
+{
+	"action": {
+		"action": "Refresh"
+	}
+}
+```
+
+**Response headers:**
+
+```
+202 Accepted
+location: /api/v1/domains/{domain-guid}/actions/{action-id}
+```
+
+(See [Polling an asynchronous action](#polling-an-asynchronous-action))
+
+Once the action reports a state of `finished`, the domain will be in the `active` state, and no further action is required.
 
 ## Mailboxes
 
@@ -800,6 +865,8 @@ POST /api/v1/mailboxes/{mailbox-guid}/actions.json
 Location: /api/v1/mailboxes/{mailbox-guid}/actions/{action-id}
 ```
 
+(See [Polling an asynchronous action](#polling-an-asynchronous-action))
+
 ### Creating a mailbox under a domain and provisioning it immediately
 
 As a convenience method to simplify the mailbox provisioning workflow, the mailbox creation endpoint also offers the `provision_immediately` flag, as per the domain provisioning workflow. In this case, the API will likewise return a 202 Accepted and a location header referring to the automatically created provisioning action. The GUID of the newly created mailbox may be inferred by parsing the action location.
@@ -828,6 +895,8 @@ POST /api/v1/domains/{domain-guid}/mailboxes.json
 202 Accepted
 Location: /api/v1/mailboxes/{mailbox-guid}/actions/{action-id}
 ```
+
+(See [Polling an asynchronous action](#polling-an-asynchronous-action))
 
 ### Updating a mailbox
 
@@ -864,6 +933,8 @@ PATCH /api/v1/mailboxes/{mailbox-guid}.json
 Location: /api/v1/mailboxes/{mailbox-guid}/actions/{action-id}
 ```
 
+(See [Polling an asynchronous action](#polling-an-asynchronous-action))
+
 ### Suspending a mailbox
 
 As a credit control measure, or to curb abusive behaviour, service to a single mailbox may be partially suspended via the API. A suspended mailbox will still receive mail destined for it, but will not be accessible to the end user.
@@ -891,6 +962,8 @@ POST /api/v1/mailboxes/{mailbox-guid}/actions.json
 Location: /api/v1/mailboxes/{mailbox-guid}/actions/{action-id}
 ```
 
+(See [Polling an asynchronous action](#polling-an-asynchronous-action))
+
 ### Closing a mailbox
 
 Closing a mailbox is a more severe form of service suspension. A closed mailbox will not be accessible to its end user, and mail delivery destined for the mailbox will also be rejected, resulting in mail destined for a closed mailbox bouncing. The existing contents of the mailbox are preserved. This may be employed as a more severe credit control or abuse mitigation measure, and also as a "soft delete" in cases where an end user has cancelled service, but the integrator wishes to preserve the data in their mailbox temporarily before finally deleting it.
@@ -916,6 +989,8 @@ POST /api/v1/mailboxes/{mailbox-guid}/actions.json
 Location: /api/v1/mailboxes/{mailbox-guid}/actions/{action-id}
 ```
 
+(See [Polling an asynchronous action](#polling-an-asynchronous-action))
+
 ### Reactivating a mailbox
 
 A mailbox may be returned from either the suspended or closed states by creating an asynchronous `Activate` action.
@@ -940,6 +1015,8 @@ POST /api/v1/mailboxes/{mailbox-guid}/actions.json
 202 Accepted
 Location: /api/v1/mailboxes/{mailbox-guid}/actions/{action-id}
 ```
+
+(See [Polling an asynchronous action](#polling-an-asynchronous-action))
 
 ### Unlocking a mailbox
 
@@ -992,6 +1069,8 @@ POST /api/v1/mailboxes/{mailbox-guid}/actions.json
 Location: /api/v1/mailboxes/{mailbox-guid}/actions/{action-id}
 ```
 
+(See [Polling an asynchronous action](#polling-an-asynchronous-action))
+
 ### Changing the edition (class of service) of a mailbox
 
 From time to time, it may be necessary to change the package edition associated with a mailbox. This has the effect of also changing the actual class of service of a provisioned mailbox.
@@ -1027,6 +1106,8 @@ PATCH /api/v1/mailboxes/{mailbox-guid}/packages/{package-guid}/edition.json
 Location: /api/v1/mailboxes/{mailbox-guid}/actions/{action-id}
 ```
 
+(See [Polling an asynchronous action](#polling-an-asynchronous-action))
+
 **Note:** Any valid edition code on the package may be specified. In the above example, a mailbox is upgraded to the premium 100GB option. It could also have been downgraded to a basic 2GB mailbox by using the appropriate edition code, for example `SYN-CMS-BAISC-02`. The valid editions on a package may be verified by using the GET call on the package itself.
 
 ### Deleting a mailbox
@@ -1053,6 +1134,8 @@ DELETE /api/v1/mailboxes/{mailbox-guid}.json
 202 Accepted
 Location: /api/v1/mailboxes/{mailbox-guid}/actions/{action-id}
 ```
+
+(See [Polling an asynchronous action](#polling-an-asynchronous-action))
 
 **Note:** Unlike other asynchronous actions on API objects. The delete action will never present a `finished` state. This is because the one-step mailbox removal process also deletes the actual mailbox record in the case of a successful delete action, deleting the action along with it. Thus, the action may be polled while it is in progress, but when finished, polling it will return a `404 Not Found`, as will any attempt to retrieve mailbox records.
 
@@ -1084,6 +1167,8 @@ POST /api/v1/domains/{domain-guid}/actions.json
 202 Accepted
 Location: /api/v1/domains/{domains-guid}/actions/{action-id}
 ```
+
+(See [Polling an asynchronous action](#polling-an-asynchronous-action))
 
 Once the action is completed, the domain GET endpoint can be interrogated for the usage information. The endpoint will report usage for all editions which are currently in use, even on domains with multiple packages and multiple editions:
 
@@ -1167,3 +1252,289 @@ GET /api/v1/domains/{guid}.json
 	}
 }
 ```
+
+# Full workflow examples for advanced operations
+
+## Polling an asynchronous action
+
+Posting actions on domains or packages in the API always result in the creation of an asynchronous action. Some other actions on the API also implicitly create an asynchronous action.
+
+Asynchronous actions can always be identified by the response headers they generate. Any interaction on the API which results in an asynchronous action, will always return with the `202 Accepted` HTTP header.
+
+Once an asynchronous action is created, it is the responsibility of the API client to continue to poll the status of that action to determine when it is completed, or to report errors to its end user if the action has failed.
+
+Any interaction with the API which results in an asynchronous action will return headers like this:
+
+*For actions on domains*
+
+```
+202 Accepted
+Location: /api/v1/domains/{domain-guid}/actions/{action-id}
+```
+
+*For actions on packages*
+
+```
+202 Accepted
+Location: /api/v1/packages/{package-guid}/actions/{action-id}
+```
+
+The location returned is the unique URI of the action. This URI can then be polled by sending a `GET` request to that location.
+
+```
+GET /api/v1/domains/{domain-guid}
+```
+
+The API will respond with the present state of the action:
+
+*A pending action*
+
+```
+{
+    "state":"pending"
+}
+```
+
+*A finished action*
+
+```
+{
+    "state":"finished"
+}
+```
+
+*A failed action*
+
+```
+{
+    "state":"error",
+    "errors": [
+        "Array of error message strings",
+        "Potentially multiple messages"
+    ]
+}
+```
+
+The client should continue to poll the state of any action until it is either in the `finished` or `error` state.
+
+**Important notes:**
+
+* Some legacy action in the API return a lowercase `location` header, rather than the standard `Location`. These can not be changed at this point, as it would break any existing integrations.
+
+  Therefor, for client libraries which treat HTTP headers in a case sensitive way, the client is responsible for checking for the the uppercase or lowercase version of the `Location` header whenever a `202 Accepted` is received.
+
+* Should an action fail (result in the `error` state), the client is required to report this to the user. Once the underlying issue causing the error has been created, the client must send another one of the same actions, either automatically, or after being prompted by the user. A failed action will remain in that state, and the API will never automatically retry it.
+
+
+## Cancelling one package on a domain
+
+Since version 6.0 of the SYNAQ API (2018-08-16), it is possible to cancel a single package (product instance) on a given domain, while leaving other packages on the domain in place.
+
+Please see the primer documentation for this ([Partial Cancellations](#partial-cancellations)) for  background on this workflow.
+
+Below are three concrete examples to better demonstrate the workflow as a whole.
+
+### Cancel a Securemail outbound bolt-on package on a CloudMail domain
+
+**Step 1: Unlink the Securemail outbound package from the domain**
+
+*Request*
+
+```
+UNLINK /api/v1/packages/{securemail-package-guid}/domains/{cloudmail-domain-guid}
+```
+
+*Response*
+
+```
+204 No Content
+```
+
+**Step 2: Check the state of the domain**
+
+*Request*
+
+```
+GET /api/v1/domains/{cloudmail-domain-guid}
+```
+
+*Response (abbreviated)*
+
+```
+{
+    "guid":"cloudmail-domain-guid",
+    "name":"cloudmail-domain-name.com",
+    "state":"stale"
+}
+```
+
+***Step 3: Refresh the domain***
+
+Since CloudMail requires no service fields when ordered on its own, you need not update service fields in this case, and can now refresh the domain to get it out of the `stale` state.
+
+*Request*
+
+```
+POST /api/v1/domains/{cloudmail-domain-guid}
+```
+
+*Payload*
+
+```
+{
+	"action": {
+		"action": "Refresh"
+	}
+}
+```
+
+*Response*
+
+```
+202 Accepted
+location: /api/v1/domains/{cloudmail-domain-guid}/actions/{action-id}
+```
+
+Follow the standard procedure for polling backend actions. (See [Polling an asynchronous action](#polling-an-asynchronous-action))
+
+### Cancel a Branding package on a domain which also has Securemail
+
+**Step 1: Unlink the Branding package from the domain**
+
+*Request*
+
+```
+UNLINK /api/v1/packages/{branding-package-guid}/domains/{securemail-domain-guid}
+```
+
+*Response*
+
+```
+202 Accepted
+location: /api/v1/domains/{securemail-domain-guid}/actions/{action-id}
+```
+
+(See [Polling an asynchronous action](#polling-an-asynchronous-action))
+
+**Important:**
+
+In this case, the automatically generated action is a Prune action, which removes services which are no longer needed. If this action fails, the platform is left in an inconsistent state, and mail flow could be affected. In such a case, a high priority error message should be reported to the user.
+
+**Step 2: Check the state of the domain**
+
+*Request*
+
+```
+GET /api/v1/domains/{securemail-domain-guid}
+```
+
+*Response (abbreviated)*
+
+```
+{
+    "guid":"securemail-domain-guid",
+    "name":"securemail-domain-name.com",
+    "state":"active"
+}
+```
+
+For this example, the domain should no be in the `active` state, and no further action is required.
+
+### Cancel an Archive package on a domain which also has Securemail
+
+**Step 1: Unlink the Archive package from the domain**
+
+*Request*
+
+```
+UNLINK /api/v1/packages/{archive-package-guid}/domains/{securemail-domain-guid}
+
+```
+
+*Response*
+
+```
+202 Accepted
+location: /api/v1/domains/{securemail-domain-guid}/actions/{action-id}
+
+```
+
+(See [Polling an asynchronous action](#polling-an-asynchronous-action))
+
+**Important:**
+
+In this case, as with the previous example, the automatically generated action is a Prune action, which removes services which are no longer needed. If this action fails, the platform is left in an inconsistent state, and mail flow could be affected. In such a case, a high priority error message should be reported to the user.
+
+**Step 2: Check the state of the domain**
+
+*Request*
+
+```
+GET /api/v1/domains/{securemail-domain-guid}
+```
+
+*Response (abbreviated)*
+
+```
+{
+    "guid":"securemail-domain-guid",
+    "name":"securemail-domain-name.com",
+    "state":"stale"
+}
+```
+
+In this case, after the prune action completes, the domain will still be in the `stale` state, as the Securemail service needs to be updated before proceeding.
+
+**Step 3: Update the Securemail domain's service fields**
+
+See [Configuring the service fields on a domain](#configuring-the-service-fields-on-a-domain)
+
+**Step 4: Refresh the domain**
+
+*Request*
+
+```
+POST /api/v1/domains/{securemail-domain-guid}
+
+```
+
+*Payload*
+
+```
+{
+	"action": {
+		"action": "Refresh"
+	}
+}
+
+```
+
+*Response*
+
+```
+202 Accepted
+location: /api/v1/domains/{securemail-domain-guid}/actions/{action-id}
+
+```
+
+(See [Polling an asynchronous action](#polling-an-asynchronous-action))
+
+**Step 5: Recheck the state of the domain**
+
+*Request*
+
+```
+GET /api/v1/domains/{securemail-domain-guid}
+```
+
+*Response (abbreviated)*
+
+```
+{
+    "guid":"securemail-domain-guid",
+    "name":"securemail-domain-name.com",
+    "state":"active"
+}
+```
+
+After refreshing the domain, it should have returned to the `active` state.
