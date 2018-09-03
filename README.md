@@ -19,6 +19,7 @@ The SYNAQ API allows resellers integrated with it to directly manipulate custome
   * [Asynchronous actions](#asynchronous-actions)
   * [Domain (and mailbox) actions](#domain-and-mailbox-actions)
   * [Partial Cancellations](#partial-cancellations)
+  * [Updating active packages and domains](#updating-active-packages-and-domains)
 - [Prerequisites](#prerequisites)
 - [Online API documentation and development sandbox](#online-api-documentation-and-development-sandbox)
 - [Developer support](#developer-support)
@@ -34,6 +35,7 @@ The SYNAQ API allows resellers integrated with it to directly manipulate custome
     + [Create a new Securemail Bidirectional package](#create-a-new-securemail-bidirectional-package)
     + [Create a new Branding package](#create-a-new-branding-package)
     + [Provisioning a package with all its linked domains](#provisioning-a-package-with-all-its-linked-domains)
+    + [Updating the edition of an active package](#updating-the-edition-of-an-active-package)
     + [Deleting a package](#deleting-a-package)
   * [Domains](#domains-1)
     + [Create a new standalone domain which can be linked to an existing package](#create-a-new-standalone-domain-which-can-be-linked-to-an-existing-package)
@@ -138,6 +140,19 @@ Detailed documentation for each of these steps is available at the referenced do
 A series of full example workflows for common use cases of this feature are also available in the full workflow example section at the end of this document.
 
 Please see [Cancelling one package on a domain](#cancelling-one-package-on-a-domain)
+
+## Updating active packages and domains
+
+Starting in version 6.2 of the API, released on 2018-09-03, the API supports updating of the editions of active packages, as well as updating of the service data of active domains.
+
+**Updating the package edition** allow a client to update the type of service delivered on an existing package, for example, up-selling an existing customer from the Securemail inbound edition to the Securemail bidirectional edition.
+
+**Updating the service information** on a domain allows domain-specific service information which was set at provisioning time to be updated on the existing domain, for example, changing the delivery destination, the password for SMTP authentication, or IP addresses for IP based authentication, on a Securemail domain, or similar authentication and/or routing information for an existing Branding domain.
+
+The procedure for performing these actions is explained in detail in the addenda to these documentation sections:
+
+* [Updating the edition of an active package](#updating-the-edition-of-an-active-package)
+* [Configuring the service fields on a domain](#configuring-the-service-fields-on-a-domain)
 
 # Prerequisites
 
@@ -390,6 +405,50 @@ location: /api/v1/packages/{package-guid}/actions/{action-id}
 
 (See [Polling an asynchronous action](#polling-an-asynchronous-action))
 
+### Updating the edition of an active package
+
+Starting in version 6.2 of the SYNAQ API (released on 2018-09-03), it is possible to update the edition of an active package using the PATCH call on the package.
+
+The payload for the PATCH call is the same as the payload for the initial package POST call. The only difference is that the patch will happen on the existing package GUID.
+
+After the patch, the package and all its associated domains will enter the `stale` state. When this happens, you will need to update the service fields (see [Configuring the service fields on a domain](#configuring-the-service-fields-on-a-domain)) and also refresh the domain (see [Refreshing a domain](#refreshing-a-domain)).
+
+**In this example, we update a Securemail outbound package to the Securemail bidirectional package:**
+
+```
+PATCH /api/v1/packages/{existing-package-guid}.json
+```
+
+**Request payload:**
+
+```
+{
+    "package":
+    {
+        "code":"SYN-PIN-SEC",
+        "editions":
+        [
+            {"code":"SYN-PIN-SEC-BOTH"}
+        ]
+    }
+}
+```
+
+**Response headers:**
+
+```
+204 No Response
+```
+
+**Important**
+
+At this point, if the package was active, the package, and all its associated domains will have entered the `stale` state, and need to have their service fields updated, and the domains will need to be refreshed.
+
+See the linked documentation sections below for detailed instructions on these two actions.
+
+* [Configuring the service fields on a domain](#configuring-the-service-fields-on-a-domain)
+* [Refreshing a domain](#refreshing-a-domain)
+
 ### Deleting a package
 
 If all of the domains on a package are either in the `deleted` state, or if the package has no more domain records linked to it, the package itself may be deleted by a `DELETE` endpoint.
@@ -524,6 +583,12 @@ PATCH /api/v1/domains/{domain-guid}/servicefields.json
 ```
 204 No Content
 ```
+
+**Important**
+
+At this point, if the domain was already active, the will have entered the `stale` state, and will need to be refreshed.
+
+Please see the documentation section on [Refreshing a domain](#refreshing-a-domain) for detailed instructions.
 
 ### Provisioning a domain
 
