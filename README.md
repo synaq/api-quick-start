@@ -1,6 +1,6 @@
 # SYNAQ API Quick Start Guide
 
-Valid for version 6.3 (2018-09-07) and above of the SYNAQ API, last updated 2018-09-03.
+Valid for version 6.3 (2018-09-07) and above of the SYNAQ API, last updated 2018-09-12.
 
 # Introduction
 
@@ -809,7 +809,7 @@ UNLINK /api/v1/packages/{package-guid}/domains/{domain-guid}.json
 **Important**
 
 It is vital that the client check the state of the domain after receiving this response on an active domain. It is very likely that the domain has now entered a stale state, and needs to be refreshed.
-						
+​						
 The state can be checked using the normal domain read call:
 
 ```
@@ -1384,12 +1384,37 @@ GET /api/v1/domains/{domain-guid}/usage.json
 }
 ```
 
+**Sample response for a domain with SYNAQ Securemail:**
+
+```
+{
+  "domain_usage_report": {
+    "state": "finished",
+    "data_as_at": "2018-09-07T09:35:27+0200",
+    "edition_usage_reports": [
+      {
+        "edition_code": "SYN-PIN-SEC-BOTH",
+        "count": 2,
+        "billable_mailboxes": [
+          "user@domain.com",
+          "another@domain.com"
+        ],
+        "warning": null,
+        "problem": null,
+        "class_of_service": null
+      }
+    ]
+  }
+}
+```
+
 **Important Note**
 
 The detailed usage reporting mechanism is still in the process of being rolled out to all products. Billable mailboxes are currently only reported for these products:
 
 * SYNAQ Archive
 * SYNAQ Mail Management Suite
+* SYNAQ Securemail (including the outbound bolt-on to CloudMail)
 
 This feature will be rolled out to all SYNAQ products in the coming weeks.
 
