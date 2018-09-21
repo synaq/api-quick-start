@@ -1217,7 +1217,7 @@ So, for this special use case, the deletion may be assumed to be complete as soo
 
 ### Hashed passwords
 
-Since version 6.4 of the SYNAQ API (released on 2018-09-21), all endpoints which accept the clear text `password` field on mailboxes (POST for creating, PATCH for updating) now also accept a new `ssha_password` field, which maybe provided instead of the clear text `password` field.
+Since version 6.4 of the SYNAQ API (released on 2018-09-21), all endpoints which accept the clear text `password` field on mailboxes (`POST` for creating, `PATCH` for updating) now also accept a new `ssha_password` field, which may be provided instead of the clear text `password` field.
 
 This allows API clients to provision or update mailbox passwords, without ever exposing the original clear text password to the SYNAQ API or any of our backing services.
 
