@@ -1,6 +1,6 @@
 # SYNAQ API Quick Start Guide
 
-Valid for version 6.3 (2018-09-07) and above of the SYNAQ API, last updated 2018-09-12.
+Valid for version 6.4 (2018-09-21) and above of the SYNAQ API, last updated 2018-09-21.
 
 # Introduction
 
@@ -60,6 +60,7 @@ The SYNAQ API allows resellers integrated with it to directly manipulate custome
     + [Unlocking a mailbox](#unlocking-a-mailbox)
     + [Changing the edition (class of service) of a mailbox](#changing-the-edition-class-of-service-of-a-mailbox)
     + [Deleting a mailbox](#deleting-a-mailbox)
+    + [Hashed passwords](#hashed-passwords)
   * [Usage reporting](#usage-reporting)
     + [Detailed usage reports](#detailed-usage-reports)
 - [Full workflow examples for advanced operations](#full-workflow-examples-for-advanced-operations)
@@ -878,6 +879,13 @@ For products where mailboxes are directly exposed via the API, such as CloudMail
 **Notes:**
 
 * Only the `email_local`, `password` and `last_name` fields are required. Many other fields are available. Please see the API documentation for a full description of all available fields.
+
+* Clear text passwords provided in the `password` field are immediately hashed and stored as SSHA256 salted hashes in SYNAQ's backend systems.
+
+* Since version 6.4 of the API (2018-09-21), you may omit the `password` field, and instead supply the `ssha_password` field, which accepts SSHA256 or SSHA salted and hashed passwords.
+
+  Please see the section on [hashed passwords](#hashed-passwords) for more details.
+
 * A mailbox edition may be specified using the optional `package_edition_code`. The code specified must be a valid edition on the package. If no code is specified, the default edition on the package, usually the simplest mailbox type, will be used. Specifying the edition this way is recommended, as it simplifies the provisioning process. The API provides a PATCH endpoint to allow the updating of mailbox editions at any time (also for active mailboxes). Please see examples related to changing a mailbox edition below, and the online sandbox tool, for more information.
 
 ```
@@ -1207,6 +1215,32 @@ Location: /api/v1/mailboxes/{mailbox-guid}/actions/{action-id}
 
 So, for this special use case, the deletion may be assumed to be complete as soon as a poll to the action or the mailbox itself returns not found.
 
+### Hashed passwords
+
+Since version 6.4 of the SYNAQ API (released on 2018-09-21), all endpoints which accept the clear text `password` field on mailboxes (POST for creating, PATCH for updating) now also accept a new `ssha_password` field, which maybe provided instead of the clear text `password` field.
+
+This allows API clients to provision or update mailbox passwords, without ever exposing the original clear text password to the SYNAQ API or any of our backing services.
+
+Supported hashes are salted SHA256 or salted SHA1. SHA256 is recommended. The salt should be four securely generated random bytes, and must be appended to the end of the hash in order to allow our backing services to authenticate user passwords against it.
+
+The hashing scheme used should be indicated by a format marker at the beginning of the string, either `{SSHA256}` or `{SSHA}`
+
+Some pseudocode examples for computing the hashes and packing them as suitable strings for the `ssha_password` field are provided below.
+
+**Example algorithm for salted SHA256**
+
+```
+salt = four_secure_random_bytes()
+ssha_password = "{SSHA256}" + base64 ( sha256( password + salt) + salt )
+```
+
+**Example algorithm for salted SHA1**
+
+```
+salt = four_secure_random_bytes()
+ssha_password = "{SSHA}" + base64 ( sha1( password + salt) + salt )
+```
+
 ## Usage reporting
 
 In order to accurately bill an end customer for usage on a given domain, or provide them with projected billing numbers based on their current usage, an integrator may request a usage report via the API. This is a two step process. First, an asynchronous `Usage` action is created on the domain. Once that action completes, the results may be retrieved from the normal GET endpoint on the domain.
@@ -1319,7 +1353,7 @@ GET /api/v1/domains/{guid}.json
 }
 ```
 
-## Detailed usage reports
+### Detailed usage reports
 
 Starting in version 6.3, released on 2018-09-07, the API supports detailed usage reporting, which shows the usage counts for each edition, and includes an itemised list of mailboxes which comprise the count for that edition.
 
