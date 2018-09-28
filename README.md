@@ -70,7 +70,7 @@ The SYNAQ API allows resellers integrated with it to directly manipulate custome
     - [Cancel a Branding package on a domain which also has Securemail](#cancel-a-Branding-package-on-a-domain-which-also-has-securemail)
     - [Cancel an Archive package on a domain which also has Securemail](#cancel-an-archive-package-on-a-domain-which-also-has-securemail)
   - [Adding a new package to an already active domain](#adding-a-new-package-to-an-already-active-domain)
-    - [Adding Securemail outbound to an existing CloudMail domain](#adding Securemail outbound to an existing CloudMail domain) 
+    - [Adding Securemail outbound to an existing CloudMail domain](#adding-securemail-outbound-to-an-existing-cloudmail-domain) 
 
 # Basic concepts
 
