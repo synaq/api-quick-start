@@ -1,6 +1,6 @@
 # SYNAQ API Quick Start Guide
 
-Valid for version 6.4 (2018-09-21) and above of the SYNAQ API, last updated 2018-09-21.
+Valid for version 6.4 (2018-09-21) and above of the SYNAQ API, last updated 2018-09-28.
 
 # Introduction
 
@@ -69,6 +69,8 @@ The SYNAQ API allows resellers integrated with it to directly manipulate custome
     - [Cancel a Securemail outbound bolt-on package on a CloudMail domain](#cancel-a-Securemail-outbound-bolt-on-package-on-a-cloudmail-domain)
     - [Cancel a Branding package on a domain which also has Securemail](#cancel-a-Branding-package-on-a-domain-which-also-has-securemail)
     - [Cancel an Archive package on a domain which also has Securemail](#cancel-an-archive-package-on-a-domain-which-also-has-securemail)
+  - [Adding a new package to an already active domain](#adding-a-new-package-to-an-already-active-domain)
+    - [Adding Securemail outbound to an existing CloudMail domain](#adding Securemail outbound to an existing CloudMail domain) 
 
 # Basic concepts
 
@@ -1737,3 +1739,113 @@ GET /api/v1/domains/{securemail-domain-guid}
 ```
 
 After refreshing the domain, it should have returned to the `active` state.
+
+## Adding a new package to an already active domain
+
+It is occasionally necessary to add another package to an already active domain. One frequently encountered use case is adding the Securemail outbound security bolt-on package to an existing CloudMail domain. The workflow for any such use case is roughly the same, so for the sake of brevity, we will only demonstrate the Securemail bolt-on use case here.
+
+### Adding Securemail outbound to an existing CloudMail domain
+
+These instructions assume that we have an existing domain with the imaginary GUID `cloud-mail-domain-guid` already provisioned via the API, and currently in an active state.
+
+**Step 1: Create Securemail outbound package under the company** 
+
+*Request*
+
+```
+POST /api/v1/ous/{company-guid}/packages
+```
+
+*Payload*
+
+```
+{
+    "package": {
+        "code":"SYN-PIN-SEC",
+        "editions": [
+            {
+                "code":"SYN-PIN-SEC-OUT"
+            }
+        ]
+    }
+}
+```
+*Response headers*
+
+```
+201 Created
+location: /api/v1/packages/{securemail-package-guid}
+```
+
+**Step 2: Link the new Securemail outbound package to the domain**
+
+*Request*
+
+```
+LINK /api/v1/packages/{securemail-package-guid}/domains/{cloud-mail-domain-guid}
+```
+
+*Response headers*
+
+```
+204 No Content
+```
+
+**Note**
+
+At this point, the existing domain will have switched from the `active` to the `pending` state. This is expected, as there are now some services on the domain which are not yet provisioned and configured.
+
+**Step 3: Configure service fields for the domain**
+
+*Request*
+
+```
+PATCH /api/v1/domains/{cloudmail-domain-guid}/servicefields.json
+```
+
+*Payload*
+
+```
+{
+	"fields": {
+   		"auth_method": "smtp",
+   		"username": "smtp-username",
+   		"password": "smtpPassw0rd!"
+   	}
+}
+```
+
+*Response headers*
+
+```
+204 No Content
+```
+
+**Step 4: Provision the new package**
+
+*Request*
+
+```
+POST /api/v1/packages/{securemail-package-guid}/actions
+```
+
+*Payload*
+
+```
+{
+    "action": {
+        "action": "Provision"
+    }
+}
+```
+
+*Response headers*
+
+```
+202 Accepted
+Location: /api/v1/packages/{securemail-package-guid}/actions/{action-id}
+```
+
+The action should now be polled using the standard process for polling asynchronous actions. See the documentation section on [polling an asynchronous action](#polling-an-asynchronous-action) for full details.
+
+Once the action is complete, the additional package has been properly provisioned on the domain.
