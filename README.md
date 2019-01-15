@@ -1,6 +1,6 @@
 # SYNAQ API Quick Start Guide
 
-Valid for version 6.4 (2018-09-21) and above of the SYNAQ API, last updated 2018-09-28.
+Valid for version 6.8 (2019-01-15) and above, of the SYNAQ API, last updated 2019-01-15.
 
 # Introduction
 
@@ -1444,15 +1444,9 @@ GET /api/v1/domains/{domain-guid}/usage.json
 }
 ```
 
-**Important Note**
+**Note**
 
-The detailed usage reporting mechanism is still in the process of being rolled out to all products. Billable mailboxes are currently only reported for these products:
-
-* SYNAQ Archive
-* SYNAQ Mail Management Suite
-* SYNAQ Securemail (including the outbound bolt-on to CloudMail)
-
-This feature will be rolled out to all SYNAQ products in the coming weeks.
+As of version 6.8 (released 2019-01-15), detailed usage reporting is available for all SYNAQ products.
 
 # Full workflow examples for advanced operations
 
