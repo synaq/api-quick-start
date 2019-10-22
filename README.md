@@ -1,86 +1,33 @@
 # SYNAQ API Quick Start Guide
 
-Valid for version 6.8 (2019-01-15) and above, of the SYNAQ API, last updated 2019-01-15.
+Valid for release 20191022.01 and later of the SYNAQ API, last updated 2019-10-22.
 
 # Introduction
 
 The SYNAQ API allows resellers integrated with it to directly manipulate customer data, and provision and manage SYNAQ services under domains for their customers.
 
-# Contents
+# New API and product structure
 
-- [Basic concepts](#basic-concepts)
-  * [Products](#products)
-  * [Editions](#editions)
-  * [Organisational units (OUs)](#organisational-units-ous)
-  * [Packages](#packages)
-  * [Domains](#domains)
-  * [Mailboxes](#mailboxes)
-  * [Service fields](#service-fields)
-  * [Asynchronous actions](#asynchronous-actions)
-  * [Domain (and mailbox) actions](#domain-and-mailbox-actions)
-  * [Partial Cancellations](#partial-cancellations)
-  * [Updating active packages and domains](#updating-active-packages-and-domains)
-- [Prerequisites](#prerequisites)
-- [Online API documentation and development sandbox](#online-api-documentation-and-development-sandbox)
-- [Developer support](#developer-support)
-- [Advanced use cases](#advanced-use-cases)
-- [Usage examples](#usage-examples)
-  * [Request authentication](#request-authentication)
-  * [OUs](#ous)
-    + [Creating a company underneath an existing reseller](#creating-a-company-underneath-an-existing-reseller)
-    + [Deleting an organisation](#deleting-an-organisation)
-  * [Packages](#packages-1)
-    + [Look up all possible package combinations under a given company](#look-up-all-possible-package-combinations-under-a-given-company)
-    + [Create a new CloudMail package](#create-a-new-cloudmail-package)
-    + [Create a new Securemail Bidirectional package](#create-a-new-securemail-bidirectional-package)
-    + [Create a new Branding package](#create-a-new-branding-package)
-    + [Provisioning a package with all its linked domains](#provisioning-a-package-with-all-its-linked-domains)
-    + [Updating the edition of an active package](#updating-the-edition-of-an-active-package)
-    + [Deleting a package](#deleting-a-package)
-  * [Domains](#domains-1)
-    + [Create a new standalone domain which can be linked to an existing package](#create-a-new-standalone-domain-which-can-be-linked-to-an-existing-package)
-    + [Linking an existing domain to a package](#linking-an-existing-domain-to-a-package)
-    + [Creating a new domain and linking it to an existing package automatically](#creating-a-new-domain-and-linking-it-to-an-existing-package-automatically)
-    + [Configuring the service fields on a domain](#configuring-the-service-fields-on-a-domain)
-    + [Provisioning a domain](#provisioning-a-domain)
-    + [Creating a new domain, linking it to an existing CloudMail package, and provisioning it automatically](#creating-a-new-domain-linking-it-to-an-existing-cloudmail-package-and-provisioning-it-automatically)
-    + [Closing a domain](#closing-a-domain)
-    + [Reactivating a domain](#reactivating-a-domain)
-    + [Deleting a domain](#deleting-a-domain)
-    + [Unlinking a domain from a package](#unlinking-a-domain-from-a-package)
-    + [Refreshing a domain](#refreshing-a-domain)
-  * [Mailboxes](#mailboxes-1)
-    + [Creating a mailbox under a domain](#creating-a-mailbox-under-a-domain)
-    + [Provisioning a mailbox](#provisioning-a-mailbox)
-    + [Creating a mailbox under a domain and provisioning it immediately](#creating-a-mailbox-under-a-domain-and-provisioning-it-immediately)
-    + [Updating a mailbox](#updating-a-mailbox)
-    + [Suspending a mailbox](#suspending-a-mailbox)
-    + [Closing a mailbox](#closing-a-mailbox)
-    + [Reactivating a mailbox](#reactivating-a-mailbox)
-    + [Unlocking a mailbox](#unlocking-a-mailbox)
-    + [Changing the edition (class of service) of a mailbox](#changing-the-edition-class-of-service-of-a-mailbox)
-    + [Deleting a mailbox](#deleting-a-mailbox)
-    + [Hashed passwords](#hashed-passwords)
-  * [Usage reporting](#usage-reporting)
-    + [Detailed usage reports](#detailed-usage-reports)
-- [Full workflow examples for advanced operations](#full-workflow-examples-for-advanced-operations)
-  - [Polling an asynchronous action](#polling-an-asynchronous-action)
-  - [Cancelling one package on a domain](#cancelling-one-package-on-a-domain)
-    - [Cancel a Securemail outbound bolt-on package on a CloudMail domain](#cancel-a-Securemail-outbound-bolt-on-package-on-a-cloudmail-domain)
-    - [Cancel a Branding package on a domain which also has Securemail](#cancel-a-Branding-package-on-a-domain-which-also-has-securemail)
-    - [Cancel an Archive package on a domain which also has Securemail](#cancel-an-archive-package-on-a-domain-which-also-has-securemail)
-  - [Adding a new package to an already active domain](#adding-a-new-package-to-an-already-active-domain)
-    - [Adding Securemail outbound to an existing CloudMail domain](#adding-securemail-outbound-to-an-existing-cloudmail-domain) 
+This document describes the new SYNAQ API and product structure, as implemented with release 20190814.01 on 2019-08-17. If you are still integrated to the legacy API, it is recommended that you upgrade to the new product structure as soon as possible. These documentation sections have critical details you will need to achieve this:
+
+* Changes in the new SYNAQ API product structure
+* Product Migrations
+* Migrating from legacy products to new products
+
+If you are still integrated with the legacy API and need access to documentation for that structure for critical maintenance, please consult the legacy API documentation here:
 
 # Basic concepts
 
 ## Products
 
-Products are combinations of physical services sold by SYNAQ. Examples of products include CouldMail, our cloud based email hosting service, Securemail, our email security service, etc. Products are purchased via the API by creating packages, as described below. A package is an instance of a given product.
+Products are combinations of physical services sold by SYNAQ. Examples of products include Cloud Mail, our cloud based email hosting service, Securemail, our email security service, etc. Products are purchased via the API by creating packages, as described below. A package is an instance of a given product.
 
 ## Editions
 
-Most of SYNAQ's products offer different classes or levels of service, to allow the package to be tailored to the end customer's specific requirements and budget. When a package is created, it must be assigned one or more editions, depending on the product. Plan based products (Securemail, Branding, Archive) require one edition. Mailbox based products such as CloudMail and Continuity may have any number of editions assigned to their packages, and individual mailboxes are then assigned to specific editions to determine their class of service.
+Products which offer the capability to provision and manipulate individual mailboxes, such as Cloud Mail, Mail Management and Continuity, can be configured with different classes or levels of service, to allow the package to be tailored to the end customer's specific requirements and budget. A package will be created with one or more editions, and where appropriate, mailboxes may be assigned to these editions.
+
+**Compatibility note**
+Unlike the legacy SYNAQ API, it is no longer necessary to assign editions to packages at the time of creating the package. Appropriate editions are now allocated automatically for all products.
 
 ## Organisational units (OUs)
 
@@ -90,9 +37,7 @@ The API allows creation of organisational units, under which packages and domain
 
 ## Packages
 
-A package is an instance of a given SYNAQ product under a particular organisational unit. For example, if a client wishes to buy the SYNAQ Securemail product, an OU would be created to represent that client, and then a SYNAQ Securemail package would be created under that OU.
-
-When creating packages, one or more editions may be specified, to determine the actual class or level of service offered under the package.
+A package is an instance of a given SYNAQ product under a particular organisational unit. For example, if a client wishes to buy the SYNAQ Securemail Standard product, an OU would be created to represent that client, and then a SYNAQ Securemail Standard package would be created under that OU.
 
 ## Domains
 
@@ -100,17 +45,17 @@ A domain is a representation in the API of an actual customer domain. Domains ex
 
 ## Mailboxes
 
-For products where mailboxes can be managed directly via the API (SYNAQ CloudMail and SYNAQ Continuity at the time of this writing), mailboxes in the API represent actual mailboxes on those services. The API allows creation of mailboxes underneath domains, and then allows the mailboxes to be provisioned onto the actual backing services on the SYNAQ platform.
+For products where mailboxes can be managed directly via the API (SYNAQ CloudMail, Mail Management and Continuity), mailboxes in the API represent actual mailboxes on those services. The API allows creation of mailboxes underneath domains, and then allows the mailboxes to be provisioned onto the actual backing services on the SYNAQ platform.
 
 ## Service fields
 
-Some SYNAQ products require additional configuration for provisioning to be possible. This includes information like the delivery destination to use for inbound Securemail domains, the authentication mechanism for outbound Securemail domains, the authentication mechanism to use for Branding domains, etc.
+All products require additional configuration for provisioning to be possible. This includes information like the delivery destinations, authentication details, and credentials for admin users.
 
 Service fields are managed via the API through a PATCH call made on a domain object. This must be done after all desired packages are linked to the domain, and before attempting to provision the domain though a provisioning action.
 
 ## Asynchronous actions
 
-The SYNAQ API abstracts a powerful services bus mechanism used on the SYNAQ platform to queue and complete actual provisioning tasks on the services on our platform. As some tasks may require a short time to complete, or wait in the queue at particularly busy times, all of these services bus tasks are represented in the API by asynchronous actions.
+The SYNAQ API abstracts a message queue based services bus used on the SYNAQ platform to queue and complete actual provisioning tasks on the services on our platform. As some tasks may require a short time to complete, or wait in the queue at particularly busy times, all of these services bus tasks are represented in the API by asynchronous actions.
 
 Asynchronous actions will generally complete very quickly, but can be delayed in especially busy situations, or for services where some manual intervention might be required on the SYNAQ platform. In general, all asynchronous actions on products other than SYNAQ Archive should complete within a minute or less, and almost always complete within a few seconds.
 
@@ -126,37 +71,64 @@ The most important and frequently used domain and mailbox action is the `Provisi
 
 For detailed instructions on how to deal with asynchronous actions, see [Polling an asynchronous action](#polling-an-asynchronous-action)
 
-## Partial Cancellations
+## Updating active domains
 
-Starting in version 6.0 of the API, released on 2018-08-16, the API supports partial product cancellations. This is the act of removing a specific package from an active domain, and consequently removing the backing services which were only needed for that package, while leaving any other packages and services on the domain in place.
+The API supports updating of the service data of active domains. This allows domain-specific service information which was set at provisioning time to be updated on the existing domain, for example, changing the delivery destination, the password for SMTP authentication, or IP addresses for IP based authentication, on a Securemail domain, or similar authentication and/or routing information for an existing Branding domain.
 
-The workflow for partial cancellations entails the following:
+The procedure for performing these actions is explained in detail in the addenda to the documentation section on [Configuring the service fields on a domain](#configuring-the-service-fields-on-a-domain)
 
-* Unlink the domain from the package which is no longer desired
-  (See [Unlinking a domain from a package](#unlinking-a-domain-from-a-package))
-* Optionally update the domain's service fields if required
-  (See [Configuring the service fields on a domain](#configuring-the-service-fields-on-a-domain))
-* Optionally refresh the domain using the Refresh action if its services are in a stale state.
-  (See [Refreshing a domain](#refreshing-a-domain))
+## Migrating between products
 
-Detailed documentation for each of these steps is available at the referenced documentation sections.
+The API supports migrating domains between products by linking a domain to an appropriately configured new package. This allows resellers to easily up-sell end customers to product bundles with new options, or to move them to products which do not include services which they do not need, rather than having to cancel an account entirely.
 
-A series of full example workflows for common use cases of this feature are also available in the full workflow example section at the end of this document.
+The procedure for migrating between products is explained in detail in the section on Product Migrations.
 
-Please see [Cancelling one package on a domain](#cancelling-one-package-on-a-domain)
+## Product bundles
 
-## Updating active packages and domains
+The current API structure implements saleable products as bundles. These include several underlying services on the SYNAQ platform. Here is a very brief list of the products and which services they include. For detailed information and sales collateral, please contact your SYNAQ account manager.
 
-Starting in version 6.2 of the API, released on 2018-09-03, the API supports updating of the editions of active packages, as well as updating of the service data of active domains.
+The product and edition codes needed to set up these products are listed in the section on Creating a Package
 
-**Updating the package edition** allow a client to update the type of service delivered on an existing package, for example, up-selling an existing customer from the Securemail inbound edition to the Securemail bidirectional edition.
-
-**Updating the service information** on a domain allows domain-specific service information which was set at provisioning time to be updated on the existing domain, for example, changing the delivery destination, the password for SMTP authentication, or IP addresses for IP based authentication, on a Securemail domain, or similar authentication and/or routing information for an existing Branding domain.
-
-The procedure for performing these actions is explained in detail in the addenda to these documentation sections:
-
-* [Updating the edition of an active package](#updating-the-edition-of-an-active-package)
-* [Configuring the service fields on a domain](#configuring-the-service-fields-on-a-domain)
+* Cloud Mail Lite
+  * 2GB Zimbra mailboxes with POP and IMAP support
+  * SYNAQ Securemail with Identity Threat Protection
+* Cloud Mail Standard
+  * 50GB / 100GB Zimbra mailboxes with support for POP, IMAP, ActiveSync and optional Zimbra archiving
+  * Optional 2GB Zimbra mailboxes with POP and IMAP support
+  * SYNAQ Securemail with Identity Threat Protection
+* Cloud Mail Plus
+  - 50GB / 100GB Zimbra mailboxes with support for POP, IMAP, ActiveSync, MAPI and optional Zimbra archiving
+  - Optional 2GB Zimbra mailboxes with POP and IMAP support
+  - SYNAQ Securemail with Identity Threat Protection
+* Cloud Mail (Lite / Standard / Plus) with Branding
+  The same as the above product, but also including SYNAQ Branding
+* Securemail Standard
+  * SYNAQ Securemail with Identity Threat Protection
+  * SYNAQ Branding
+* Securemail Premium
+  - SYNAQ Securemail with Identity Threat Protection
+  - LinkShield protection
+  - Data leak prevention
+  - SYNAQ Branding
+* Branding Standard
+  * SYNAQ Branding
+  * SYNAQ Securemail with Identity Threat Protection
+* SecureArchive
+  * SYNAQ Archive with 10 year retention
+  * Managed Securemail (no UI access)
+* Continuity
+  * SYNAQ Continuity
+  * Managed Securemail (no UI access)
+* Mail Management Standard
+  * SYNAQ Continuity
+  * SYNAQ Securemail with Identity Threat Protection
+  * SYNAQ Branding
+  * SYNAQ Archive with 10 year retention
+* Mail Management Premium
+  - SYNAQ Continuity
+  - SYNAQ Securemail with Identity Threat Protection
+  - SYNAQ Branding
+  - SYNAQ Archive with unlimited retention
 
 # Prerequisites
 
@@ -283,9 +255,7 @@ The response will show all possible product and edition combinations for new pac
 
 This response can be used to dynamically generate forms with available products on your client system.
 
-### Create a new CloudMail package
-
-Create an instance of the CloudMail product with 2 mailbox types; Basic 2GB and Premium 25GB
+### Creating a Package
 
 ```
 POST /api/v1/ous/{company-guid}/packages.json
@@ -296,15 +266,7 @@ POST /api/v1/ous/{company-guid}/packages.json
 ```
 {
   "package": {
-    "code": "SYN-CMS",
-    "editions": [
-      {
-        "code": "SYN-CMS-BASIC-02"
-      },
-      {
-        "code": "SYN-CM-PREM-25-ARCH"
-      }
-    ]
+    "code": "{package-code}"
   }
 }
 ```
@@ -316,69 +278,21 @@ POST /api/v1/ous/{company-guid}/packages.json
 location: /api/v1/packages/{package-guid}
 ```
 
-**Note:** An empty array can be specified for the editions parameter above on the CloudMail product only. In such cases, all default allowed editions will be enabled for the package.
+#### Package codes
 
-For all other products, an edition must be selected at package creation time.
-
-### Create a new Securemail Bidirectional package
-
-Create a Securemail bidirectional package, note the edition code "SYN-PIN-SEC-BOTH". Securemail is a plan based product, so an edition code must always be specified.
-
-```
-POST /api/v1/ous/{company-guid}/packages.json
-```
-
-**Request payload:**
-
-```
-{
-    "package":
-    {
-        "code":"SYN-PIN-SEC",
-        "editions":
-        [
-            {"code":"SYN-PIN-SEC-BOTH"}
-        ]
-    }
-}
-```
-
-**Response headers:**
-
-```
-201 Created
-location: /api/v1/packages/{package-guid}
-```
-
-### Create a new Branding package
-
-Create a Branding package, note the edition code "SYN-PIN-BRD", Branding is a plan based product, so must always have an edition code specified, similar to Securemail.
-
-```
-POST /api/v1/ous/{company-guid}/packages.json
-```
-
-**Request payload:**
-
-```
-{
-    "package":
-    {
-        "code":"SYN-PIN-BRD",
-        "editions":
-        [
-            {"code":"SYN-PIN-BRD"}
-        ]
-    }
-}
-```
-
-**Response headers:**
-
-```
-201 Created
-location: /api/v1/packages/{package-guid}
-```
+**CLM-LT** Cloud Mail Lite
+**CLM-STD** Cloud Mail Standard
+**CLM-PLUS** Cloud Mail Plus
+**CLM-LTB** Cloud Mail Lite with Branding
+**CLM-STD-B** Cloud Mail Standard with Branding
+**CLM-PLUS-B** Cloud Mail Plus with Branding
+**SM-STD** Securemail Standard
+**SM-PREM** Securemail Premium
+**BRD-STD** Branding Standard
+**AR-SEC** SecureArchive
+**CT-STD** Continuity
+**MM-STD** Mail Management Standard
+**MM-PREM** Mail Management Premium
 
 ### Provisioning a package with all its linked domains
 
@@ -408,50 +322,6 @@ location: /api/v1/packages/{package-guid}/actions/{action-id}
 ```
 
 (See [Polling an asynchronous action](#polling-an-asynchronous-action))
-
-### Updating the edition of an active package
-
-Starting in version 6.2 of the SYNAQ API (released on 2018-09-03), it is possible to update the edition of an active package using the PATCH call on the package.
-
-The payload for the PATCH call is the same as the payload for the initial package POST call. The only difference is that the patch will happen on the existing package GUID.
-
-After the patch, the package and all its associated domains will enter the `stale` state. When this happens, you will need to update the service fields (see [Configuring the service fields on a domain](#configuring-the-service-fields-on-a-domain)) and also refresh the domain (see [Refreshing a domain](#refreshing-a-domain)).
-
-**In this example, we update a Securemail outbound package to the Securemail bidirectional package:**
-
-```
-PATCH /api/v1/packages/{existing-package-guid}.json
-```
-
-**Request payload:**
-
-```
-{
-    "package":
-    {
-        "code":"SYN-PIN-SEC",
-        "editions":
-        [
-            {"code":"SYN-PIN-SEC-BOTH"}
-        ]
-    }
-}
-```
-
-**Response headers:**
-
-```
-204 No Response
-```
-
-**Important**
-
-At this point, if the package was active, the package, and all its associated domains will have entered the `stale` state, and need to have their service fields updated, and the domains will need to be refreshed.
-
-See the linked documentation sections below for detailed instructions on these two actions.
-
-* [Configuring the service fields on a domain](#configuring-the-service-fields-on-a-domain)
-* [Refreshing a domain](#refreshing-a-domain)
 
 ### Deleting a package
 
@@ -508,7 +378,7 @@ LINK /api/v1/packages/{package-guid}/domains/{domain-guid}.json
 
 ### Creating a new domain and linking it to an existing package automatically
 
-To simplify the process of creating domains and linking them in implementations where a package is likely to only require a single domain, the API provides a convenience method where a domain is created underneath a package.
+To simplify the process of creating domains and linking them, the API provides a convenience method where a domain is created underneath a package.
 
 In reality, the domain is still owned by the OU which owns the package, but using this method, the domain is linked to the package immediately, negating the need for the intermediary linking step.
 
@@ -535,7 +405,7 @@ location: /api/v1/domains/{domain-guid}
 
 ### Configuring the service fields on a domain
 
-Most products require additional service information to be configured before a domain can be provisioned. Which information is required is determined by the package(s) linked to the domain, so linking must be completed before these steps.
+Additional service information is required to be configured before a domain can be provisioned. Which information is required is determined by the package(s) linked to the domain, so linking must be completed before these steps.
 
 To determine which fields require information, the general use GET endpoint for domains may be used with the given domain GUID, and the `fields` object may be inspected.
 
@@ -545,7 +415,7 @@ To determine which fields require information, the general use GET endpoint for 
 GET /api/v1/domains/{domain-guid}.json
 ```
 
-**Sample Response for a bidirectional Securemail domain (abbreviated):**
+**Sample Response for a Securemail Standard domain (abbreviated):**
 
 ```
 {
@@ -556,7 +426,12 @@ GET /api/v1/domains/{domain-guid}.json
     "mail_delivery_alternative": null,
     "auth_method": "smtp",
     "username": null,
-    "password": null
+    "password": null,
+    "admin_username": null,
+    "admin_password": null,
+    "admin_first_name": null,
+    "admin_last_name": null,
+    "service_provider": "other"
   }
 }
 ```
@@ -578,6 +453,10 @@ PATCH /api/v1/domains/{domain-guid}/servicefields.json
    		"auth_method": "smtp",
    		"username": "smtp-username",
    		"password": "smtpPassw0rd!"
+   		"admin_username": "jane.doe@customer.com",
+    	"admin_password": "somePass1234%$",
+    	"admin_first_name": "Jane",
+    	"admin_last_name": "Doe"
    	}
 }
 ```
@@ -638,40 +517,6 @@ GET /api/v1/domains/{domain-guid}/actions/{action-id}
 ```
 
 The polling process for actions on packages is similar to that shown for domains above.
-
-(See [Polling an asynchronous action](#polling-an-asynchronous-action))
-
-### Creating a new domain, linking it to an existing CloudMail package, and provisioning it automatically
-
-For the CloudMail product, no service field configuration is required, so to streamline the provisioning process even further, especially for integrations where only CloudMail is required, the API provides a special `provision_immediately` flag on the endpoint which allows domains to be created and linked to a package.
-
-If the flag is raised, the domain will be created and linked to the package as per the simplified workflow, but a provision action will also be immediately created.
-
-In this case, the API will not return the usual 201 Created with a location header referring to the domain itself, but a 202 Accepted, with a location header referring to the automatically created domain provisioning action.
-
-The GUID for the actual domain may be inferred by parsing the location of the provisioning action.
-
-```
-POST /api/v1/packages/{package-guid}/domains.json
-```
-
-**Request payload:**
-
-```
-{
-  "domain": {
-    "domain_name": "acme-cloudmail.com",
-    "provision_immediately": true
-  }
-}
-```
-
-**Response headers:**
-
-```
-202 Accepted
-location: /api/v1/domains/{domain-guid}/actions/{action-id}
-```
 
 (See [Polling an asynchronous action](#polling-an-asynchronous-action))
 
@@ -776,7 +621,9 @@ DELETE /api/v1/domains/{domain-guid}.json
 
 * The `DELETE` action is only permitted for domains in the `inactive` or `deleted` states. A domain in any other state can not be deleted from the API's records.
 
-* For products which expose mailboxes directly as API objects, such as CloudMail and Continuity, a domain may not be deleted if it still contains mailboxes in provisioned states. For this reason, the API will reject an asynchronous `Delete` action on any domain where provisioned mailboxes are still present. To delete such a domain, the mailboxes must be deleted first. Please refer to the mailbox management section below.
+* For products which expose mailboxes directly as API objects, such as Cloud Mail, Continuity and Mail Management, a domain may not be deleted if it still contains mailboxes in provisioned states. 
+
+  For this reason, the API will reject an asynchronous `Delete` action on any domain where provisioned mailboxes are still present. To delete such a domain, the mailboxes must be deleted first. Please refer to the mailbox management section below.
 
 ### Unlinking a domain from a package
 
@@ -843,7 +690,7 @@ As with the previous example, the domain will now either be in the `stale` or `a
 
 ### Refreshing a domain
 
-If a domain has entered the `state` state, some of its services need to be refreshed. This will only happen after a partial cancellation (see [Partial Cancellations](#partial-cancellations) and [Unlinking a domain from a package](#unlinking-a-domain-from-a-package)) where some services were overlapping.
+If a domain has entered the `state` state, some of its services need to be refreshed. This will only happen after a partial cancellation (see [Unlinking a domain from a package](#unlinking-a-domain-from-a-package)) where some services were overlapping.
 
 After updating the domain's service fields (see [Configuring the service fields on a domain](#configuring-the-service-fields-on-a-domain)), the Refresh action should be sent for the domain.
 
@@ -876,7 +723,7 @@ Once the action reports a state of `finished`, the domain will be in the `active
 
 ### Creating a mailbox under a domain
 
-For products where mailboxes are directly exposed via the API, such as CloudMail and Continuity, a mailbox may be created and provisioned under a domain once the domain has been provisioned.
+For products where mailboxes are directly exposed via the API, such as Cloud Mail, Continuity and Mailbox Management, a mailbox may be created and provisioned under a domain once the domain has been provisioned.
 
 **Notes:**
 
@@ -1164,7 +1011,7 @@ PATCH /api/v1/mailboxes/{mailbox-guid}/packages/{package-guid}/edition.json
 ```
 {
 	"edition": {
-		"code": "SYN-CM-PREM-100-ARCH"
+		"code": "CLM-STD-100-ARCH"
 	}
 }
 ```
@@ -1184,7 +1031,7 @@ Location: /api/v1/mailboxes/{mailbox-guid}/actions/{action-id}
 
 (See [Polling an asynchronous action](#polling-an-asynchronous-action))
 
-**Note:** Any valid edition code on the package may be specified. In the above example, a mailbox is upgraded to the premium 100GB option. It could also have been downgraded to a basic 2GB mailbox by using the appropriate edition code, for example `SYN-CMS-BAISC-02`. The valid editions on a package may be verified by using the GET call on the package itself.
+**Note:** Any valid edition code on the package may be specified. In the above example, a mailbox is upgraded to the 100GB option with Archiving on a Cloud Mail Standard package. It could also have been downgraded to a basic 2GB mailbox by using the appropriate edition code, for example `CLM-LT`. The valid editions on a package may be verified by using the GET call on the package itself.
 
 ### Deleting a mailbox
 
@@ -1278,7 +1125,7 @@ Once the action is completed, the domain GET endpoint can be interrogated for th
 GET /api/v1/domains/{guid}.json
 ```
 
-**Sample response for a CloudMail domain**
+**Sample response for a Cloud Mail Standard domain**
 
 ```
 {
@@ -1289,11 +1136,11 @@ GET /api/v1/domains/{guid}.json
 			"data_as_at": "2018-02-19 13:00:00+0200"
 			"edition_usage_reports": [
 				{
-			    	"edition_code": "SYN-CMS-BASIC-02",
+			    	"edition_code": "CLM-STD-50-ARCH",
 			    	"count": 21
 			   },
 			   {
-			    	"edition_code": "SYN-CM-PREM-25-ARCH",
+			    	"edition_code": "CLM-STD-100-ARCH",
 			    	"count": 8
 			   }
 			]
@@ -1302,7 +1149,7 @@ GET /api/v1/domains/{guid}.json
 }
 ```
 
-**Sample response for a Securemail domain:**
+**Sample response for a Securemail Standard domain:**
 
 ```
 {
@@ -1313,7 +1160,7 @@ GET /api/v1/domains/{guid}.json
 			"data_as_at": "2018-02-19 13:00:00+0200"
 			"edition_usage_reports": [
 		       {
-		        	"edition_code": "SYN-PIN-SEC-BOTH",
+		        	"edition_code": "SM-STD",
 		        	"count": 25
 		       }
 	      ]
@@ -1322,7 +1169,7 @@ GET /api/v1/domains/{guid}.json
 }
 ```
 
-**Sample response for a Mail Management Suite domain:**
+**Sample response for a Mail Management Premium domain:**
 
 ```
 {
@@ -1333,7 +1180,7 @@ GET /api/v1/domains/{guid}.json
 			"data_as_at": "2018-02-19 13:00:00+0200"
 			"edition_usage_reports": [
 				{
-					"edition_code": "SYN-PIN-BDL-10",
+					"edition_code": "MM-PREM",
 					"count": 18
 				}
 			]
@@ -1371,7 +1218,7 @@ Once the usage reporting action has completed. The detailed report can be retrie
 GET /api/v1/domains/{domain-guid}/usage.json
 ```
 
-**Sample response for a domain with SYNAQ Archive:**
+**Sample response for a domain with SecureArchive:**
 
 ```
 {
@@ -1380,7 +1227,7 @@ GET /api/v1/domains/{domain-guid}/usage.json
     "data_as_at": "2018-09-07T09:36:09+0200",
     "edition_usage_reports": [
       {
-        "edition_code": "SYN-PIN-ARCH-10",
+        "edition_code": "AR-SEC",
         "count": 3,
         "billable_mailboxes": [
           "info@some-domain.com",
@@ -1396,7 +1243,7 @@ GET /api/v1/domains/{domain-guid}/usage.json
 }
 ```
 
-**Sample response for a domain with SYNAQ Mail Management Suite:**
+**Sample response for a domain with Mail Management Standard:**
 
 ```
 {
@@ -1405,7 +1252,7 @@ GET /api/v1/domains/{domain-guid}/usage.json
     "data_as_at": "2018-09-07T09:35:27+0200",
     "edition_usage_reports": [
       {
-        "edition_code": "SYN-PIN-SUITE-10",
+        "edition_code": "MM-STD",
         "count": 2,
         "billable_mailboxes": [
           "user@domain.com",
@@ -1420,7 +1267,7 @@ GET /api/v1/domains/{domain-guid}/usage.json
 }
 ```
 
-**Sample response for a domain with SYNAQ Securemail:**
+**Sample response for a domain with Securemail Standard:**
 
 ```
 {
@@ -1429,7 +1276,7 @@ GET /api/v1/domains/{domain-guid}/usage.json
     "data_as_at": "2018-09-07T09:35:27+0200",
     "edition_usage_reports": [
       {
-        "edition_code": "SYN-PIN-SEC-BOTH",
+        "edition_code": "SM-STD",
         "count": 2,
         "billable_mailboxes": [
           "user@domain.com",
@@ -1443,10 +1290,6 @@ GET /api/v1/domains/{domain-guid}/usage.json
   }
 }
 ```
-
-**Note**
-
-As of version 6.8 (released 2019-01-15), detailed usage reporting is available for all SYNAQ products.
 
 # Full workflow examples for advanced operations
 
@@ -1520,229 +1363,19 @@ The client should continue to poll the state of any action until it is either in
 
 * Should an action fail (result in the `error` state), the client is required to report this to the user. Once the underlying issue causing the error has been created, the client must send another one of the same actions, either automatically, or after being prompted by the user. A failed action will remain in that state, and the API will never automatically retry it.
 
-
-## Cancelling one package on a domain
-
-Since version 6.0 of the SYNAQ API (2018-08-16), it is possible to cancel a single package (product instance) on a given domain, while leaving other packages on the domain in place.
-
-Please see the primer documentation for this ([Partial Cancellations](#partial-cancellations)) for  background on this workflow.
-
-Below are three concrete examples to better demonstrate the workflow as a whole.
-
-### Cancel a Securemail outbound bolt-on package on a CloudMail domain
-
-**Step 1: Unlink the Securemail outbound package from the domain**
-
-*Request*
-
-```
-UNLINK /api/v1/packages/{securemail-package-guid}/domains/{cloudmail-domain-guid}
-```
-
-*Response*
-
-```
-204 No Content
-```
-
-**Step 2: Check the state of the domain**
-
-*Request*
-
-```
-GET /api/v1/domains/{cloudmail-domain-guid}
-```
-
-*Response (abbreviated)*
-
-```
-{
-    "guid":"cloudmail-domain-guid",
-    "name":"cloudmail-domain-name.com",
-    "state":"stale"
-}
-```
-
-***Step 3: Refresh the domain***
-
-Since CloudMail requires no service fields when ordered on its own, you need not update service fields in this case, and can now refresh the domain to get it out of the `stale` state.
-
-*Request*
-
-```
-POST /api/v1/domains/{cloudmail-domain-guid}
-```
-
-*Payload*
-
-```
-{
-	"action": {
-		"action": "Refresh"
-	}
-}
-```
-
-*Response*
-
-```
-202 Accepted
-location: /api/v1/domains/{cloudmail-domain-guid}/actions/{action-id}
-```
-
-Follow the standard procedure for polling backend actions. (See [Polling an asynchronous action](#polling-an-asynchronous-action))
-
-### Cancel a Branding package on a domain which also has Securemail
-
-**Step 1: Unlink the Branding package from the domain**
-
-*Request*
-
-```
-UNLINK /api/v1/packages/{branding-package-guid}/domains/{securemail-domain-guid}
-```
-
-*Response*
-
-```
-202 Accepted
-location: /api/v1/domains/{securemail-domain-guid}/actions/{action-id}
-```
-
-(See [Polling an asynchronous action](#polling-an-asynchronous-action))
-
-**Important:**
-
-In this case, the automatically generated action is a Prune action, which removes services which are no longer needed. If this action fails, the platform is left in an inconsistent state, and mail flow could be affected. In such a case, a high priority error message should be reported to the user.
-
-**Step 2: Check the state of the domain**
-
-*Request*
-
-```
-GET /api/v1/domains/{securemail-domain-guid}
-```
-
-*Response (abbreviated)*
-
-```
-{
-    "guid":"securemail-domain-guid",
-    "name":"securemail-domain-name.com",
-    "state":"active"
-}
-```
-
-For this example, the domain should no be in the `active` state, and no further action is required.
-
-### Cancel an Archive package on a domain which also has Securemail
-
-**Step 1: Unlink the Archive package from the domain**
-
-*Request*
-
-```
-UNLINK /api/v1/packages/{archive-package-guid}/domains/{securemail-domain-guid}
-
-```
-
-*Response*
-
-```
-202 Accepted
-location: /api/v1/domains/{securemail-domain-guid}/actions/{action-id}
-
-```
-
-(See [Polling an asynchronous action](#polling-an-asynchronous-action))
-
-**Important:**
-
-In this case, as with the previous example, the automatically generated action is a Prune action, which removes services which are no longer needed. If this action fails, the platform is left in an inconsistent state, and mail flow could be affected. In such a case, a high priority error message should be reported to the user.
-
-**Step 2: Check the state of the domain**
-
-*Request*
-
-```
-GET /api/v1/domains/{securemail-domain-guid}
-```
-
-*Response (abbreviated)*
-
-```
-{
-    "guid":"securemail-domain-guid",
-    "name":"securemail-domain-name.com",
-    "state":"stale"
-}
-```
-
-In this case, after the prune action completes, the domain will still be in the `stale` state, as the Securemail service needs to be updated before proceeding.
-
-**Step 3: Update the Securemail domain's service fields**
-
-See [Configuring the service fields on a domain](#configuring-the-service-fields-on-a-domain)
-
-**Step 4: Refresh the domain**
-
-*Request*
-
-```
-POST /api/v1/domains/{securemail-domain-guid}
-
-```
-
-*Payload*
-
-```
-{
-	"action": {
-		"action": "Refresh"
-	}
-}
-
-```
-
-*Response*
-
-```
-202 Accepted
-location: /api/v1/domains/{securemail-domain-guid}/actions/{action-id}
-
-```
-
-(See [Polling an asynchronous action](#polling-an-asynchronous-action))
-
-**Step 5: Recheck the state of the domain**
-
-*Request*
-
-```
-GET /api/v1/domains/{securemail-domain-guid}
-```
-
-*Response (abbreviated)*
-
-```
-{
-    "guid":"securemail-domain-guid",
-    "name":"securemail-domain-name.com",
-    "state":"active"
-}
-```
-
-After refreshing the domain, it should have returned to the `active` state.
-
 ## Adding a new package to an already active domain
 
-It is occasionally necessary to add another package to an already active domain. One frequently encountered use case is adding the Securemail outbound security bolt-on package to an existing CloudMail domain. The workflow for any such use case is roughly the same, so for the sake of brevity, we will only demonstrate the Securemail bolt-on use case here.
+It is occasionally necessary to add another package to an already active domain, although this is mostly not needed since the introduction of the new product bundles.
 
-### Adding Securemail outbound to an existing CloudMail domain
+One potential remaining use case is adding SecureArchive to a SecureMail Standard domain, though up-selling the user to Mail Management Standard in that case would be preferred and recommended.
 
-These instructions assume that we have an existing domain with the imaginary GUID `cloud-mail-domain-guid` already provisioned via the API, and currently in an active state.
+The workflow for any such use case is roughly the same, so for the sake of brevity, we will only demonstrate the SecureArchive bolt-on use case here.
 
-**Step 1: Create Securemail outbound package under the company** 
+### Adding SecureArchive to an existing Securemail Standard domain
+
+These instructions assume that we have an existing domain with the imaginary GUID `securemail-domain-guid` already provisioned via the API, and currently in an active state.
+
+**Step 1: Create SecureArchive package under the company** 
 
 *Request*
 
@@ -1755,12 +1388,7 @@ POST /api/v1/ous/{company-guid}/packages
 ```
 {
     "package": {
-        "code":"SYN-PIN-SEC",
-        "editions": [
-            {
-                "code":"SYN-PIN-SEC-OUT"
-            }
-        ]
+        "code":"AR-SEC"
     }
 }
 ```
@@ -1768,7 +1396,7 @@ POST /api/v1/ous/{company-guid}/packages
 
 ```
 201 Created
-location: /api/v1/packages/{securemail-package-guid}
+location: /api/v1/packages/{archive-package-guid}
 ```
 
 **Step 2: Link the new Securemail outbound package to the domain**
@@ -1776,7 +1404,7 @@ location: /api/v1/packages/{securemail-package-guid}
 *Request*
 
 ```
-LINK /api/v1/packages/{securemail-package-guid}/domains/{cloud-mail-domain-guid}
+LINK /api/v1/packages/{archive-package-guid}/domains/{cloud-mail-domain-guid}
 ```
 
 *Response headers*
@@ -1804,7 +1432,11 @@ PATCH /api/v1/domains/{cloudmail-domain-guid}/servicefields.json
 	"fields": {
    		"auth_method": "smtp",
    		"username": "smtp-username",
-   		"password": "smtpPassw0rd!"
+   		"password": "smtpPassw0rd!",
+   		"admin_username": "some@person.com",
+   		"admin_password": "adminPassw0rd!",
+   		"instance_name": "archive-instance-name",
+   		"growth_rate": 100
    	}
 }
 ```
@@ -1820,7 +1452,7 @@ PATCH /api/v1/domains/{cloudmail-domain-guid}/servicefields.json
 *Request*
 
 ```
-POST /api/v1/packages/{securemail-package-guid}/actions
+POST /api/v1/packages/{archive-package-guid}/actions
 ```
 
 *Payload*
