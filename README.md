@@ -124,7 +124,7 @@ For products where mailboxes can be managed directly via the API (SYNAQ CloudMai
 
 All products require additional configuration for provisioning to be possible. This includes information like the delivery destinations, authentication details, and credentials for admin users.
 
-Service fields are managed via the API through a PATCH call made on a domain object. This must be done after all desired packages are linked to the domain, and before attempting to provision the domain though a provisioning action.
+Service fields are managed via the API through a PATCH call made on a domain object. This must be done before attempting to provision the domain though a provisioning action.
 
 ## Asynchronous actions
 
