@@ -1678,7 +1678,7 @@ POST /api/v1/ous/{company-guid}/packages
 location: /api/v1/packages/{archive-package-guid}
 ```
 
-**Step 2: Link the new Securemail outbound package to the domain**
+**Step 2: Link the new SecureArchive package to the domain**
 
 *Request*
 
