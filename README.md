@@ -1775,7 +1775,7 @@ It is no longer necessary to provide the `product_group_code`or `editons` fields
 
 All of the new product bundles are implemented as packages which can only be linked to a single domain. In some limited use cases, integrators are still permitted to link multiple packages to a domain, but never more than one domain to any given package.
 
-This was done to simplify the process to cancel only some domains in a subscription. To implement a client with multiple domains, create a separate package for each domains.
+This was done to simplify the process to cancel only some domains in a subscription. To implement a client with multiple domains, create a separate package for each domain.
 
 These separate packages and domains can then be managed independently of each other, negating the need for the legacy partial cancellation workflow.
 
