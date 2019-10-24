@@ -75,6 +75,7 @@ The SYNAQ API allows resellers integrated with it to directly manipulate custome
   * [Product group codes and edition codes](#product-group-codes-and-edition-codes)
   * [Single domain products](#single-domain-products)
   * [Partial cancellations](#partial-cancellations)
+  * [Unlinking domains from packages](#unlinking-domains-from-packages)
   * [Immediate provisioning of domains](#immediate-provisioning-of-domains)
 
 # New API and product structure
@@ -398,7 +399,7 @@ location: /api/v1/packages/{package-guid}/actions/{action-id}
 
 ### Deleting a package
 
-If all of the domains on a package are either in the `deleted` state, or if the package has no more domain records linked to it, the package itself may be deleted by a `DELETE` endpoint.
+If the domain linked to the package is in the `deleted` state, or if the package has no domain record linked to it, the package itself may be deleted by a `DELETE` endpoint.
 
 ```
 DELETE /api/v1/packages/{package-guid}.json
@@ -702,17 +703,6 @@ DELETE /api/v1/domains/{domain-guid}.json
 
 Domains can also be unlinked from packages to which they are already linked. 
 
-**Important Note on Partial Cancellation Workflows:**
-
-Depending on wether the domain is currently provisioned on backing services, and on which services are affected by the removal of the domain from the package, a few different possible workflows may need to be followed.
-
-* If the domain is currently inactive, no further action is needed.
-* If the domain is active and some of the backing services were only related to the package being removed, an automated Prune action will be initiated to remove those services.
-* If the domain is active and some services overlap between the product being removed, and other products which are unaffected, the domain will enter a stale state, whereupon service fields will need to be updated if required, and the domain will need to be refreshed using a Refresh domain action.
-* In some rare cases, following the automatic Prune action, the domain may still have overlapping services, and will enter the stale state, where a service field update is required, followed by a Refresh action.
-
-For all of these possibilities, the initial request is the same:
-
 ```
 UNLINK /api/v1/packages/{package-guid}/domains/{domain-guid}.json
 ```
@@ -723,49 +713,17 @@ UNLINK /api/v1/packages/{package-guid}/domains/{domain-guid}.json
 204 No Content
 ```
 
-**Response headers for active domains with overlapping services:**
+**Compatibility note:**
 
-```
-204 No Content
-```
+In the legacy API structure, it was possible to remove certain services a client no longer needs by unlinking a package from an active domain. While that workflow is still supported for backwards compatibility, it is deprecated and should not be used, so documentation for it has been omitted.
 
-**Important**
+The recommended way to remove unwanted services from a domain in the new structure is to migrate the domain to a product bundle which does not include the unwanted service. Please see [Migrating a domain from one product to another](#migrating-a-domain-from-one-product-to-another) for details.
 
-It is vital that the client check the state of the domain after receiving this response on an active domain. It is very likely that the domain has now entered a stale state, and needs to be refreshed.
-​						
-The state can be checked using the normal domain read call:
-
-```
-GET /api/v1/domains/{domainGuid}.json
-```
-
-The client should then evaluate the `state` property in the returned JSON object. If the state is `inactive` or `active`, no further action is needed.
-
-If the state is `stale`, an update of service fields and a Refresh action are needed. See these documentation sections for more information:
-
-* [Configuring the service fields on a domain](#configuring-the-service-fields-on-a-domain)
-* [Refreshing a domain](#refreshing-a-domain)
-
-**Response headers for active domains with services which are no longer needed:**
-
-```
-202 Accepted
-location: /api/v1/domains/{domain-guid}/actions/{action-id}
-```
-
-(See [Polling an asynchronous action](#polling-an-asynchronous-action))
-
-**Important**
-
-If this response is received, the client must poll the action which was automatically returned. Use the normal polling logic described in this document. If the action fails, the client must report a high priority error message to the user. If the action completes, the client must then check the status of the domain as described in the example directly before this one.
-
-As with the previous example, the domain will now either be in the `stale` or `active` state.
+If you need to perform the old workflow for maintenance reasons, please consult the [Legacy API documentation](#legacy-api-documentation)
 
 ### Refreshing a domain
 
-If a domain has entered the `state` state, some of its services need to be refreshed. This will only happen after a partial cancellation (see [Unlinking a domain from a package](#unlinking-a-domain-from-a-package)) where some services were overlapping.
-
-After updating the domain's service fields (see [Configuring the service fields on a domain](#configuring-the-service-fields-on-a-domain)), the Refresh action should be sent for the domain.
+If a domain has entered the `state` state, some of its services need to be refreshed. This generally only occurs in the current version of the API after updating an active domain's service fields (see [Configuring the service fields on a domain](#configuring-the-service-fields-on-a-domain))
 
 ```
 POST /api/v1/domains/{domain-guid}/actions.json
@@ -1828,6 +1786,14 @@ The partial cancellation workflow which existed in the legacy API is still suppo
 This process is deprecated, and omitted from this version of the documentation to avoid confusion.
 
 When clients which to partially cancel existing services, we recommend the change be implemented as a migration to a new product which does not include the unwanted service instead.
+
+If you need to perform the old workflow for maintenance reasons, please consult the [Legacy API documentation](#legacy-api-documentation)
+
+## Unlinking domains from packages
+
+The API still allows unlinking domains from packages, but as the partial cancellations workflow is now deprecated, that use case is omitted from this document.
+
+The recommended way to remove unwanted services from a domain in the new structure is to migrate the domain to a product bundle which does not include the unwanted service. Please see [Migrating a domain from one product to another](#migrating-a-domain-from-one-product-to-another) for details.
 
 If you need to perform the old workflow for maintenance reasons, please consult the [Legacy API documentation](#legacy-api-documentation)
 
