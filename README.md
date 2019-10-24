@@ -159,7 +159,7 @@ The procedure for migrating between products is explained in detail in the secti
 
 The current API structure implements saleable products as bundles. These include several underlying services on the SYNAQ platform. Here is a very brief list of the products and which services they include. For detailed information and sales collateral, please contact your SYNAQ account manager.
 
-The product and edition codes needed to set up these products are listed in the section on Creating a Package
+The product and edition codes needed to set up these products are listed in the section on [Creating a Package](#creating-a-package)
 
 * Cloud Mail Lite
   * 2GB Zimbra mailboxes with POP and IMAP support
