@@ -1701,7 +1701,7 @@ At this point, the existing domain will have switched from the `active` to the `
 *Request*
 
 ```
-PATCH /api/v1/domains/{cloudmail-domain-guid}/servicefields.json
+PATCH /api/v1/domains/{securemail-domain-guid}/servicefields.json
 ```
 
 *Payload*
