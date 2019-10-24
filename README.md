@@ -72,6 +72,7 @@ The SYNAQ API allows resellers integrated with it to directly manipulate custome
     + [Adding SecureArchive to an existing Securemail Standard domain](#adding-securearchive-to-an-existing-securemail-standard-domain)
 - [Changes between the legacy SYNAQ API and the current structure](#changes-between-the-legacy-synaq-api-and-the-current-structure)
   * [New product bundles](#new-product-bundles)
+  * [Product group codes and edition codes](#Product group codes and edition codes)
   * [Single domain products](#single-domain-products)
   * [Partial cancellations](#partial-cancellations)
   * [Immediate provisioning of domains](#immediate-provisioning-of-domains)
@@ -1807,6 +1808,10 @@ The existing SYNAQ product suite (product codes starting with SYN) has been repl
 It is recommended that integrators cease the sale of old products as soon as possible, and sell the new bundles to new clients. Please contact your SYNAQ account manager for sales collateral and further details on the new bundles.
 
 It is also recommended that existing customers be upgraded to the new bundles as soon as possible, or at the end of their contract terms. See the section on [Migrating a domain from one product to another](#migrating-a-domain-from-one-product-to-another) for technical details of how this can be achieved.
+
+## Product group codes and edition codes
+
+It is no longer necessary to provide the `product_group_code`or `editons` fields when creating a package which is an instance of the new product bundles. These fields are deprecated, but still available for legacy products.
 
 ## Single domain products
 
