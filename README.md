@@ -1,6 +1,10 @@
-# SYNAQ API Quick Start Guide
+# SYNAQ API Legacy Implementation Reference
 
-Valid for version 6.8 (2019-01-15) and above, of the SYNAQ API, last updated 2019-01-15.
+**Please note that this is a legacy documentation branch, and should not be used to implement new integrations with the API.**
+
+This branch was left in place as a reference for integrators who have not yet upgraded to the new API product structure, and need information on performing legacy workflows which are deprecated in the current API structure. This document was split from the current documentation on 2019-10-24, and will not be maintained in future.
+
+If you are developing a new integration, please consult the latest documentation at https://github.com/synaq/api-quick-start/
 
 # Introduction
 
