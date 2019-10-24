@@ -837,7 +837,7 @@ POST /api/v1/domains/{domain-guid}/mailboxes.json
 		"email_local": "sample",
 		"password": "Sample123$",
 		"last_name": "Sample",
-		"package_edition_code": "SYN-CM-PREM-25-ARCH",
+		"package_edition_code": "CLM-STD-50-ARCH",
 		"provision_immediately": true
 	}
 }
