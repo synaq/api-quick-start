@@ -352,19 +352,19 @@ location: /api/v1/packages/{package-guid}
 
 #### Package codes
 
-**CLM-LT** Cloud Mail Lite
-**CLM-STD** Cloud Mail Standard
-**CLM-PLUS** Cloud Mail Plus
-**CLM-LTB** Cloud Mail Lite with Branding
-**CLM-STD-B** Cloud Mail Standard with Branding
-**CLM-PLUS-B** Cloud Mail Plus with Branding
-**SM-STD** Securemail Standard
-**SM-PREM** Securemail Premium
-**BRD-STD** Branding Standard
-**AR-SEC** SecureArchive
-**CT-STD** Continuity
-**MM-STD** Mail Management Standard
-**MM-PREM** Mail Management Premium
+* **CLM-LT** Cloud Mail Lite
+* **CLM-STD** Cloud Mail Standard
+* **CLM-PLUS** Cloud Mail Plus
+* **CLM-LTB** Cloud Mail Lite with Branding
+* **CLM-STD-B** Cloud Mail Standard with Branding
+* **CLM-PLUS-B** Cloud Mail Plus with Branding
+* **SM-STD** Securemail Standard
+* **SM-PREM** Securemail Premium
+* **BRD-STD** Branding Standard
+* **AR-SEC** SecureArchive
+* **CT-STD** Continuity
+* **MM-STD** Mail Management Standard
+* **MM-PREM** Mail Management Premium
 
 ### Provisioning a package with all its linked domains
 
