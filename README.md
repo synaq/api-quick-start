@@ -36,7 +36,7 @@ The SYNAQ API allows resellers integrated with it to directly manipulate custome
     + [Look up all possible package combinations under a given company](#look-up-all-possible-package-combinations-under-a-given-company)
     + [Creating a Package](#creating-a-package)
       - [Package codes](#package-codes)
-    + [Provisioning a package with all its linked domains](#provisioning-a-package-with-all-its-linked-domains)
+    + [Provisioning a package](#provisioning-a-package)
     + [Deleting a package](#deleting-a-package)
   * [Domains](#domains-1)
     + [Create a new standalone domain which can be linked to an existing package](#create-a-new-standalone-domain-which-can-be-linked-to-an-existing-package)
@@ -366,7 +366,7 @@ location: /api/v1/packages/{package-guid}
 * **MM-STD** Mail Management Standard
 * **MM-PREM** Mail Management Premium
 
-### Provisioning a package with all its linked domain
+### Provisioning a package
 
 In cases when a new package is being added to an existing domain, or the domain has migrated to a new package, the API permits a provision action to be created on a package rather than a domain. The process for doing this is the same as for provisioning actions created directly on domains, but using the package actions endpoints.
 
