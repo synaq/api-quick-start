@@ -366,9 +366,9 @@ location: /api/v1/packages/{package-guid}
 * **MM-STD** Mail Management Standard
 * **MM-PREM** Mail Management Premium
 
-### Provisioning a package with all its linked domains
+### Provisioning a package with all its linked domain
 
-In cases when multiple domains are linked to a package, or where a new package is being added to an existing domain, the API permits a provision action to be created on a package rather than a domain. The process for doing this is the same as for provisioning actions created directly on domains, but using the package actions endpoints.
+In cases when a new package is being added to an existing domain, or the domain has migrated to a new package, the API permits a provision action to be created on a package rather than a domain. The process for doing this is the same as for provisioning actions created directly on domains, but using the package actions endpoints.
 
 **Note:** See the domain documentation below for more information on linking packages and domains.
 
