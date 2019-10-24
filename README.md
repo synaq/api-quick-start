@@ -6,15 +6,87 @@ Valid for release 20191022.01 and later of the SYNAQ API, last updated 2019-10-2
 
 The SYNAQ API allows resellers integrated with it to directly manipulate customer data, and provision and manage SYNAQ services under domains for their customers.
 
+# Contents
+
+- [New API and product structure](#new-api-and-product-structure)
+  * [Legacy API documentation](#legacy-api-documentation)
+- [Basic concepts](#basic-concepts)
+  * [Products](#products)
+  * [Editions](#editions)
+  * [Organisational units (OUs)](#organisational-units-ous)
+  * [Packages](#packages)
+  * [Domains](#domains)
+  * [Mailboxes](#mailboxes)
+  * [Service fields](#service-fields)
+  * [Asynchronous actions](#asynchronous-actions)
+  * [Domain (and mailbox) actions](#domain-and-mailbox-actions)
+  * [Updating active domains](#updating-active-domains)
+  * [Migrating between products](#migrating-between-products)
+  * [Product bundles](#product-bundles)
+- [Prerequisites](#prerequisites)
+- [Online API documentation and development sandbox](#online-api-documentation-and-development-sandbox)
+- [Developer support](#developer-support)
+- [Advanced use cases](#advanced-use-cases)
+- [Usage examples](#usage-examples)
+  * [Request authentication](#request-authentication)
+  * [OUs](#ous)
+    + [Creating a company underneath an existing reseller](#creating-a-company-underneath-an-existing-reseller)
+    + [Deleting an organisation](#deleting-an-organisation)
+  * [Packages](#packages-1)
+    + [Look up all possible package combinations under a given company](#look-up-all-possible-package-combinations-under-a-given-company)
+    + [Creating a Package](#creating-a-package)
+      - [Package codes](#package-codes)
+    + [Provisioning a package with all its linked domains](#provisioning-a-package-with-all-its-linked-domains)
+    + [Deleting a package](#deleting-a-package)
+  * [Domains](#domains-1)
+    + [Create a new standalone domain which can be linked to an existing package](#create-a-new-standalone-domain-which-can-be-linked-to-an-existing-package)
+    + [Linking an existing domain to a package](#linking-an-existing-domain-to-a-package)
+    + [Creating a new domain and linking it to an existing package automatically](#creating-a-new-domain-and-linking-it-to-an-existing-package-automatically)
+    + [Configuring the service fields on a domain](#configuring-the-service-fields-on-a-domain)
+    + [Provisioning a domain](#provisioning-a-domain)
+    + [Closing a domain](#closing-a-domain)
+    + [Reactivating a domain](#reactivating-a-domain)
+    + [Deleting a domain](#deleting-a-domain)
+    + [Unlinking a domain from a package](#unlinking-a-domain-from-a-package)
+    + [Refreshing a domain](#refreshing-a-domain)
+  * [Mailboxes](#mailboxes-1)
+    + [Creating a mailbox under a domain](#creating-a-mailbox-under-a-domain)
+    + [Provisioning a mailbox](#provisioning-a-mailbox)
+    + [Creating a mailbox under a domain and provisioning it immediately](#creating-a-mailbox-under-a-domain-and-provisioning-it-immediately)
+    + [Updating a mailbox](#updating-a-mailbox)
+    + [Suspending a mailbox](#suspending-a-mailbox)
+    + [Closing a mailbox](#closing-a-mailbox)
+    + [Reactivating a mailbox](#reactivating-a-mailbox)
+    + [Unlocking a mailbox](#unlocking-a-mailbox)
+    + [Changing the edition (class of service) of a mailbox](#changing-the-edition-class-of-service-of-a-mailbox)
+    + [Deleting a mailbox](#deleting-a-mailbox)
+    + [Hashed passwords](#hashed-passwords)
+  * [Usage reporting](#usage-reporting)
+    + [Detailed usage reports](#detailed-usage-reports)
+- [Full workflow examples for advanced operations](#full-workflow-examples-for-advanced-operations)
+  * [Polling an asynchronous action](#polling-an-asynchronous-action)
+  * [Migrating a domain from one product to another](#migrating-a-domain-from-one-product-to-another)
+    + [Migrating from Cloud Mail Legacy to Cloud Mail Standard with Branding](#migrating-from-cloud-mail-legacy-to-cloud-mail-standard-with-branding)
+    + [Migrating from Cloud Mail Plus with Branding to Securemail Standard](#migrating-from-cloud-mail-plus-with-branding-to-securemail-standard)
+  * [Adding a new package to an already active domain](#adding-a-new-package-to-an-already-active-domain)
+    + [Adding SecureArchive to an existing Securemail Standard domain](#adding-securearchive-to-an-existing-securemail-standard-domain)
+- [Changes between the legacy SYNAQ API and the current structure](#changes-between-the-legacy-synaq-api-and-the-current-structure)
+  * [New product bundles](#new-product-bundles)
+  * [Single domain products](#single-domain-products)
+  * [Partial cancellations](#partial-cancellations)
+  * [Immediate provisioning of domains](#immediate-provisioning-of-domains)
+
 # New API and product structure
 
 This document describes the new SYNAQ API and product structure, as implemented with release 20190814.01 on 2019-08-17. If you are still integrated to the legacy API, it is recommended that you upgrade to the new product structure as soon as possible. These documentation sections have critical details you will need to achieve this:
 
-* Changes in the new SYNAQ API product structure
-* Product Migrations
-* Migrating from legacy products to new products
+* [Product bundles](#product-bundles)
+* [Migrating a domain from one product to another](#migrating-a-domain-from-one-product-to-another)
+* [Changes between the legacy SYNAQ API and the current structure](#changes-between-the-legacy-synaq-api-and-the-current-structure)
 
-If you are still integrated with the legacy API and need access to documentation for that structure for critical maintenance, please consult the legacy API documentation here:
+## Legacy API documentation
+
+If you are still integrated with the legacy API and need access to documentation for that structure for critical maintenance, please consult the legacy API documentation here: https://github.com/synaq/api-quick-start/tree/legacy
 
 # Basic concepts
 
@@ -81,7 +153,7 @@ The procedure for performing these actions is explained in detail in the addenda
 
 The API supports migrating domains between products by linking a domain to an appropriately configured new package. This allows resellers to easily up-sell end customers to product bundles with new options, or to move them to products which do not include services which they do not need, rather than having to cancel an account entirely.
 
-The procedure for migrating between products is explained in detail in the section on Product Migrations.
+The procedure for migrating between products is explained in detail in the section on [Migrating a domain from one product to another](#migrating-a-domain-from-one-product-to-another)
 
 ## Product bundles
 
@@ -1363,6 +1435,254 @@ The client should continue to poll the state of any action until it is either in
 
 * Should an action fail (result in the `error` state), the client is required to report this to the user. Once the underlying issue causing the error has been created, the client must send another one of the same actions, either automatically, or after being prompted by the user. A failed action will remain in that state, and the API will never automatically retry it.
 
+## Migrating a domain from one product to another
+
+To migrate a domain from one product to another, a package representing the new product must first be created under the same company, with the `expect_migration` flag raised.
+
+Next, the existing domain should be linked to the new package via the LINK package endpoint (see Linking an existing domain to a package)
+
+The API will evaluate the request to see if the domain is eligible to migrate to the new product. There are some cases in which migration may be rejected:
+
+* The domain currently has active mailboxes, and the new product does not include the service that mailboxes are provisioned on. In this case the mailboxes must be deleted first
+
+* There are active mailboxes, and the new product lacks classes of service which can accommodate all the current mailboxes. In this case, mailboxes need to be downgraded to classes of service which have smaller or equal storage to a class in the new product, as well as a smaller or equal additional feature set. 
+
+  **Example**: Migrating from Cloud Mail Legacy or Cloud Mail Standard to Cloud Mail Lite will not be allowed if there are mailboxes larger than 2GB.
+
+Ideally, integrators should design with these limitations in mind, and warn the end user before they attempt to make such changes, rather than relying on errors from the API, though the API will provide appropriate error feedback in these instances.
+
+If the migration is accepted, the API will automatically unlink the previous package from the domain.
+
+**Important**: When the previous package is unlinked, any services which are not included in the new package will be decommissioned on the backing services **immediately**. Integrators are encouraged to warn users of this, to prevent unexpected data loss stemming from users not understanding that step.
+
+In cases where this happens, the API will respond to the LINK domain call with a 202 Accepted, which links to the Prune action for the services which are no longer needed. Otherwise, the API will respond with a 204 No Content.
+
+The domain will then be in the `inactive` state, and provisioning it proceeds as usual for a domain linked to a package. (See [Configuring the service fields on a domain](#configuring-the-service-fields-on-a-domain) and [Provisioning a domain](#provisioning-a-domain)) 
+
+### Migrating from Cloud Mail Legacy to Cloud Mail Standard with Branding
+
+In this example, an existing client on Cloud Mail Legacy want to migrate to the new Cloud Mail Standard product, and also add Branding
+
+**Step 1: Create Cloud Mail Standard with Branding package**
+
+Make sure to raise the `expect_migration` flag.
+
+*Request*
+
+```
+POST /api/v1/ous/{company-guid}/packages
+```
+
+*Payload*
+
+```
+{
+    "package": {
+        "code":"CLM-STD-B",
+        "expect_migration": true
+    }
+}
+```
+*Response headers*
+
+```
+201 Created
+location: /api/v1/packages/{cloud-mail-package-guid}
+```
+
+**Step 2: Link the domain to the new package**
+
+*Request*
+
+```
+LINK /api/v1/packages/{cloud-mail-package-guid}/domains/{cloud-mail-domain-guid}
+```
+
+*Response headers*
+
+```
+204 No Content
+```
+
+**Note**
+
+At this point, the existing domain will have switched from the `active` to the `inactive` state. This is expected, as the domain needs to be configured and "reprovisioned" on the new services. The domain will not have been removed or changed on the backend, but the API will be updating any already-active mailboxes to appropriate new classes of service in the background.
+
+**Step 3: Configure service fields for the domain**
+
+Note the Securemail and Branding related fields which are now mandatory.
+
+*Request*
+
+```
+PATCH /api/v1/domains/{cloud-mail-domain-guid}/servicefields.json
+```
+
+*Payload*
+
+```
+{
+	"fields": {
+   		"auth_method": "smtp",
+   		"username": "smtp-username",
+   		"password": "smtpPassw0rd!",
+   		"admin_username": "some@person.com",
+   		"admin_password": "adminPassw0rd!",
+   		"admin_first_name": "Some",
+   		"admin_last_name": "Person",
+   		"service_provider": "other"
+   	}
+}
+```
+
+*Response headers*
+
+```
+204 No Content
+```
+
+**Step 4: Provision the new package**
+
+*Request*
+
+```
+POST /api/v1/packages/{cloud-mail-package-guid}/actions
+```
+
+*Payload*
+
+```
+{
+    "action": {
+        "action": "Provision"
+    }
+}
+```
+
+*Response headers*
+
+```
+202 Accepted
+Location: /api/v1/packages/{cloud-mail-package-guid}/actions/{action-id}
+```
+
+The action should now be polled using the standard process for polling asynchronous actions. See the documentation section on [polling an asynchronous action](#polling-an-asynchronous-action) for full details.
+
+### Migrating from Cloud Mail Plus with Branding to Securemail Standard
+
+In this example, a client on Cloud Mail Plus with Branding decides to host their mail elsewhere, but retain the Securemail Standard service for email security.
+
+**Step 1: Create Securemail Standard package**
+
+Make sure to raise the `expect_migration` flag.
+
+*Request*
+
+```
+POST /api/v1/ous/{company-guid}/packages
+```
+
+*Payload*
+
+```
+{
+    "package": {
+        "code":"SM-STD",
+        "expect_migration": true
+    }
+}
+```
+*Response headers*
+
+```
+201 Created
+location: /api/v1/packages/{securemail-package-guid}
+```
+
+**Step 2: Link the domain to the new package**
+
+*Request*
+
+```
+LINK /api/v1/packages/{securemail-package-guid}/domains/{domain-guid}
+```
+
+*Response headers*
+
+```
+202 Accepted
+Location: /api/v1/domains/{domain-guid}/actions/{action-id}
+```
+
+The returned action is the automated prune action to remote the Zimbra service, which is no longer needed. The action should now be polled using the standard process for polling asynchronous actions. See the documentation section on [polling an asynchronous action](#polling-an-asynchronous-action) for full details.
+
+Once the action is complete, the Zimbra service will be decommissioned, and the new package is ready to be configured.
+
+**Note**
+
+At this point, the existing domain will have switched from the `active` to the `inactive` state. This is expected, as the domain needs to be configured and "reprovisioned" on the new services. In this case, the domain has been removed from Zimbra, but no changes have been made to the Securemail or Branding services, as they are both included in the new package.
+
+The domain should now be configured and provisioned as normal. which will reconfigure the domain on Securemail and Branding with settings appropriate for the new package.
+
+**Step 3: Configure service fields for the domain**
+
+Note the full Securemail and Branding related fields which are now mandatory.
+
+*Request*
+
+```
+PATCH /api/v1/domains/{domain-guid}/servicefields.json
+```
+
+*Payload*
+
+```
+{
+	"fields": {
+	    "mail_delivery_location": "some.host.com",
+   		"auth_method": "custom",
+   		"admin_username": "some@person.com",
+   		"admin_password": "adminPassw0rd!",
+   		"admin_first_name": "Some",
+   		"admin_last_name": "Person",
+   		"service_provider": "office365"
+   	}
+}
+```
+
+*Response headers*
+
+```
+204 No Content
+```
+
+**Step 4: Provision the new package**
+
+*Request*
+
+```
+POST /api/v1/packages/{securemail-package-guid}/actions
+```
+
+*Payload*
+
+```
+{
+    "action": {
+        "action": "Provision"
+    }
+}
+```
+
+*Response headers*
+
+```
+202 Accepted
+Location: /api/v1/packages/{cloud-mail-package-guid}/actions/{action-id}
+```
+
+The action should now be polled using the standard process for polling asynchronous actions. See the documentation section on [polling an asynchronous action](#polling-an-asynchronous-action) for full details.
+
 ## Adding a new package to an already active domain
 
 It is occasionally necessary to add another package to an already active domain, although this is mostly not needed since the introduction of the new product bundles.
@@ -1469,9 +1789,47 @@ POST /api/v1/packages/{archive-package-guid}/actions
 
 ```
 202 Accepted
-Location: /api/v1/packages/{securemail-package-guid}/actions/{action-id}
+Location: /api/v1/packages/{archive-package-guid}/actions/{action-id}
 ```
 
 The action should now be polled using the standard process for polling asynchronous actions. See the documentation section on [polling an asynchronous action](#polling-an-asynchronous-action) for full details.
 
 Once the action is complete, the additional package has been properly provisioned on the domain.
+
+# Changes between the legacy SYNAQ API and the current structure
+
+This section contains compatibility notes for integrators who wish to upgrade to the new API structure from the legacy structure.
+
+## New product bundles
+
+The existing SYNAQ product suite (product codes starting with SYN) has been replaced by a new bundle structure. For details on the new bundles, please see the section on [Product bundles](#product-bundles)
+
+It is recommended that integrators cease the sale of old products as soon as possible, and sell the new bundles to new clients. Please contact your SYNAQ account manager for sales collateral and further details on the new bundles.
+
+It is also recommended that existing customers be upgraded to the new bundles as soon as possible, or at the end of their contract terms. See the section on [Migrating a domain from one product to another](#migrating-a-domain-from-one-product-to-another) for technical details of how this can be achieved.
+
+## Single domain products
+
+All of the new product bundles are implemented as packages which can only be linked to a single domain. In some limited use cases, integrators are still permitted to link multiple packages to a domain, but never more than one domain to any given package.
+
+This was done to simplify the process to cancel only some domains in a subscription. To implement a client with multiple domains, create a separate package for each domains.
+
+These separate packages and domains can then be managed independently of each other, negating the need for the legacy partial cancellation workflow.
+
+## Partial cancellations
+
+The partial cancellation workflow which existed in the legacy API is still supported, and will work for legacy products with multiple domains or packages which are linked together.
+
+This process is deprecated, and omitted from this version of the documentation to avoid confusion.
+
+When clients which to partially cancel existing services, we recommend the change be implemented as a migration to a new product which does not include the unwanted service instead.
+
+If you need to perform the old workflow for maintenance reasons, please consult the [Legacy API documentation](#legacy-api-documentation)
+
+## Immediate provisioning of domains
+
+The immediate provisioning workflow, triggered by raising the `provision_immediately` flag on a domain. which was implemented for legacy Cloud Mail domains, is still available for the legacy product, but is deprecated in this version of the API, and excluded from this version of the documentation to avoid confusion. This is because all products (including the new Cloud Mail bundles) now require service field configuration before provisioning.
+
+If you need to perform the old workflow for maintenance reasons, please consult the [Legacy API documentation](#legacy-api-documentation)
+
+The immediate provisioning workflow for **mailboxes** is still supported and available.
