@@ -1398,7 +1398,7 @@ The client should continue to poll the state of any action until it is either in
 
 To migrate a domain from one product to another, a package representing the new product must first be created under the same company, with the `expect_migration` flag raised.
 
-Next, the existing domain should be linked to the new package via the LINK package endpoint (see Linking an existing domain to a package)
+Next, the existing domain should be linked to the new package via the LINK package endpoint (see [Linking an existing domain to a package](#linking-an-existing-domain-to-a-package))
 
 The API will evaluate the request to see if the domain is eligible to migrate to the new product. There are some cases in which migration may be rejected:
 
