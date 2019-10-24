@@ -134,7 +134,7 @@ Asynchronous actions will generally complete very quickly, but can be delayed in
 
 When asynchronous actions are created, the API returns their location to the client in an HTTP header. This location can be used to poll the action and determine its state. When a problem occurs, the action will also report the reason for the failure, which can be relayed to SYNAQ support for assistance.
 
-Full documentation on the use of asynchronous actions may be found in the usage example section of this document.
+Full documentation on the use of asynchronous actions may be found in the section on [Polling an asynchronous action](#polling-an-asynchronous-action)
 
 ## Domain (and mailbox) actions
 
