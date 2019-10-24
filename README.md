@@ -72,7 +72,7 @@ The SYNAQ API allows resellers integrated with it to directly manipulate custome
     + [Adding SecureArchive to an existing Securemail Standard domain](#adding-securearchive-to-an-existing-securemail-standard-domain)
 - [Changes between the legacy SYNAQ API and the current structure](#changes-between-the-legacy-synaq-api-and-the-current-structure)
   * [New product bundles](#new-product-bundles)
-  * [Product group codes and edition codes](#Product group codes and edition codes)
+  * [Product group codes and edition codes](#product-group-codes-and-edition-codes)
   * [Single domain products](#single-domain-products)
   * [Partial cancellations](#partial-cancellations)
   * [Immediate provisioning of domains](#immediate-provisioning-of-domains)
