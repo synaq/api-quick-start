@@ -1,6 +1,6 @@
 # SYNAQ API Quick Start Guide
 
-Valid for release 20191022.01 and later of the SYNAQ API, last updated 2019-10-24.
+Valid for release 2020-02-03.1 and later of the SYNAQ API, last updated 2020-02-05.
 
 # Introduction
 
@@ -22,6 +22,7 @@ The SYNAQ API allows resellers integrated with it to directly manipulate custome
   * [Domain (and mailbox) actions](#domain-and-mailbox-actions)
   * [Updating active domains](#updating-active-domains)
   * [Migrating between products](#migrating-between-products)
+  * [Moving domains between companies](#moving-domains-between-companies)
   * [Product bundles](#product-bundles)
 - [Prerequisites](#prerequisites)
 - [Online API documentation and development sandbox](#online-api-documentation-and-development-sandbox)
@@ -68,6 +69,7 @@ The SYNAQ API allows resellers integrated with it to directly manipulate custome
   * [Migrating a domain from one product to another](#migrating-a-domain-from-one-product-to-another)
     + [Migrating from Cloud Mail Legacy to Cloud Mail Standard with Branding](#migrating-from-cloud-mail-legacy-to-cloud-mail-standard-with-branding)
     + [Migrating from Cloud Mail Plus with Branding to Securemail Standard](#migrating-from-cloud-mail-plus-with-branding-to-securemail-standard)
+  * [Moving a domain from one company to another](#moving-a-domain-from-one-company-to-another)
   * [Adding a new package to an already active domain](#adding-a-new-package-to-an-already-active-domain)
     + [Adding SecureArchive to an existing Securemail Standard domain](#adding-securearchive-to-an-existing-securemail-standard-domain)
 - [Changes between the legacy SYNAQ API and the current structure](#changes-between-the-legacy-synaq-api-and-the-current-structure)
@@ -156,6 +158,12 @@ The procedure for performing these actions is explained in detail in the addenda
 The API supports migrating domains between products by linking a domain to an appropriately configured new package. This allows resellers to easily up-sell end customers to product bundles with new options, or to move them to products which do not include services which they do not need, rather than having to cancel an account entirely.
 
 The procedure for migrating between products is explained in detail in the section on [Migrating a domain from one product to another](#migrating-a-domain-from-one-product-to-another)
+
+## Moving domains between companies
+
+The API supports moving domains between any two companies to which the user has access. This is done by configuring a new package on the company to which the domain should move, with special configuration to indicate that a domain move should take place, and linking the domain to that new package.
+
+The procedure for moving domains between companies explained in detail in the section on [Moving a domain from one company to another](#moving-a-domain-from-one-company-to-another)
 
 ## Product bundles
 
@@ -1638,6 +1646,135 @@ POST /api/v1/packages/{securemail-package-guid}/actions
 ```
 202 Accepted
 Location: /api/v1/packages/{cloud-mail-package-guid}/actions/{action-id}
+```
+
+The action should now be polled using the standard process for polling asynchronous actions. See the documentation section on [polling an asynchronous action](#polling-an-asynchronous-action) for full details.
+
+## Moving a domain from one company to another
+
+To move a domain from one company to another, a new package representing the same product, or a new product, must first be created under the company to which the domain should move, with the  `expect_domain_move` flag raised. If you also wish to move the domain to a different product at the same time, the  `expect_migration` flag should also be raised. It is safe to always raise the `ecpect_migration` flag for domain moves, to simplify implementation.
+
+Next, the existing domain should be linked to the new package via the LINK package endpoint (see [Linking an existing domain to a package](#linking-an-existing-domain-to-a-package))
+
+The API will evaluate the request to see if the domain is eligible to move to the new company and product.
+
+If the domain move is accepted, the API will automatically unlink the previous package in the old company from the domain, and the domain will move to the new company.
+
+**Important**: If also moving to a different product, when the previous package is unlinked, any services which are not included in the new package will be decommissioned on the backing services **immediately**. Integrators are encouraged to warn users of this, to prevent unexpected data loss stemming from users not understanding that step.
+
+The API will respond to the LINK domain call with a 202 Accepted, which links to a Move action on the domain. This action wil start executing immediately, and will complete all preparatory steps in the back end services which are required to move the domain.
+
+The domain will then be in the `inactive` state, and provisioning it proceeds as usual for a domain linked to a package. (See [Configuring the service fields on a domain](#configuring-the-service-fields-on-a-domain) and [Provisioning a domain](#provisioning-a-domain)) 
+
+### Example
+
+In this example, a domain currently provisioned under Foo Industries, with the hypothetical API GUID `FOO-CORP` needs to move to Bar Industries, with the hypothetical API GUID `BAR-CORP`. In this case, the domain currently has Cloud Mail Plus, and the customer wishes to continue to use that product. If a different product is to be used, remember to also raise the `expect_migration` flag on the package when creating it.
+
+**Step 1: Create the new Cloud Mail Plus package under Bar Industries**
+
+Make sure to raise the `expect_domain_move` flag.
+
+**NOTE**: If the client wants to move to a new product, you should also raise the `expect_migration` flag. It is safe to do so anyway, to simplify your implementation. 
+
+*Request*
+
+```
+POST /api/v1/ous/{BAR-CORP}/packages
+```
+
+*Payload*
+
+```
+{
+    "package": {
+        "code":"CLM-PLUS",
+        "expect_domain_move": true
+    }
+}
+```
+
+*Response headers*
+
+```
+201 Created
+location: /api/v1/packages/{NEW-CLOUD-MAIL-PLUS-GUID}
+```
+
+**Step 2: Link the domain to the new package**
+
+*Request*
+
+```
+LINK /api/v1/packages/{NEW-CLOUD-MAIL-PLUS-GUID}/domains/{domain-guid}
+```
+
+*Response headers*
+
+```
+202 Accepted
+Location: /api/v1/domains/{domain-guid}/actions/{action-id}
+```
+
+The returned action is the automated Move action to prepare the back end services for the domain to be moved. The action should now be polled using the standard process for polling asynchronous actions. See the documentation section on [polling an asynchronous action](#polling-an-asynchronous-action) for full details.
+
+**Note**
+
+At this point, the existing domain will have switched from the `active` to the `inactive` state. This is expected, as the domain needs to be configured and "reprovisioned" on the new company, potentially with different service fields.
+
+The domain should now be configured and provisioned as normal. which will update any back end service information to the configuration the new owners of the domain have selected.
+
+**Step 3: Configure service fields for the domain**
+
+*Request*
+
+```
+PATCH /api/v1/domains/{domain-guid}/servicefields.json
+```
+
+*Payload*
+
+```
+{
+	"fields": {
+   		"auth_method": "smtp",
+   		"admin_username": "some@person.com",
+   		"admin_password": "adminPassw0rd!",
+   		"admin_first_name": "Some",
+   		"admin_last_name": "Person",
+   		"service_provider": "other"
+   	}
+}
+```
+
+*Response headers*
+
+```
+204 No Content
+```
+
+**Step 4: Provision the new package**
+
+*Request*
+
+```
+POST /api/v1/packages/{NEW-CLOUD-MAIL-PLUS-GUID}/actions
+```
+
+*Payload*
+
+```
+{
+    "action": {
+        "action": "Provision"
+    }
+}
+```
+
+*Response headers*
+
+```
+202 Accepted
+Location: /api/v1/packages/{NEW-CLOUD-MAIL-PLUS-GUID}/actions/{action-id}
 ```
 
 The action should now be polled using the standard process for polling asynchronous actions. See the documentation section on [polling an asynchronous action](#polling-an-asynchronous-action) for full details.
