@@ -1,6 +1,6 @@
 # SYNAQ API Quick Start Guide
 
-Valid for release 2020-02-03.1 and later of the SYNAQ API, last updated 2020-02-05.
+Valid for release 2020-06-10.1 and later of the SYNAQ API, last updated 2020-06-11.
 
 # Introduction
 
