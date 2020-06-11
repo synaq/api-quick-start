@@ -69,6 +69,7 @@ The SYNAQ API allows resellers integrated with it to directly manipulate custome
   * [Migrating a domain from one product to another](#migrating-a-domain-from-one-product-to-another)
     + [Migrating from Cloud Mail Legacy to Cloud Mail Standard with Branding](#migrating-from-cloud-mail-legacy-to-cloud-mail-standard-with-branding)
     + [Migrating from Cloud Mail Plus with Branding to Securemail Standard](#migrating-from-cloud-mail-plus-with-branding-to-securemail-standard)
+  * [Checking if a domain can be migrated to a new product and how the migration will affect mailbox allocations](#checking-if-a-domain-can-be-migrated-to-a-new-product-and-how-the-migration-will-affect-mailbox-allocations)
   * [Moving a domain from one company to another](#moving-a-domain-from-one-company-to-another)
   * [Adding a new package to an already active domain](#adding-a-new-package-to-an-already-active-domain)
     + [Adding SecureArchive to an existing Securemail Standard domain](#adding-securearchive-to-an-existing-securemail-standard-domain)
@@ -1649,6 +1650,114 @@ Location: /api/v1/packages/{cloud-mail-package-guid}/actions/{action-id}
 ```
 
 The action should now be polled using the standard process for polling asynchronous actions. See the documentation section on [polling an asynchronous action](#polling-an-asynchronous-action) for full details.
+
+## Checking if a domain can be migrated to a new product and how the migration will affect mailbox allocations
+
+The API accepts the OPTIONS method on the same endpoint used to link packages and domains with the LINK method. In this case, the API will perform a dry run of the link process. If the operation can not be completed, the same failure message that would have resulted from the LINK method will be returned. If the operation can proceed, the `204 No Content` response will be returned.
+
+If the operation can be completed, and the migration is between two products with mailbox editions, a `200 OK` response will be returned, along with a JSON report showing the mappings between editions and the number of mailboxes that will be mapped from each edition. This allows integrators to provide end users with a preview of how mailbox editions will be affected by the migration.
+
+### Checking if a domain with Securemail Standard can be migrated to Securemail Premium
+
+```
+OPTIONS /api/v1/packages/{premium-package-guid}/domains/{domain-guid}
+```
+
+*Response headears*
+```
+204 No content
+```
+
+As with all API endpoints where specific data can is not required, the `204 No content` response here indicates that the LINK method on the same endpoint would succeed, and the domain can by migrated to this package.
+
+### Checking if a domain with Securemail Standard can be migrated to Cloud Mail Standard
+
+```
+OPTIONS /api/v1/packages/{cloud-mail-package-guid}/domains/{domain-guid}
+```
+
+*Response headers*
+```
+204 No content
+```
+
+### Checking if a domain with Cloud Mail Standard can be migrated to Securemail Standard with mailboxes still active
+
+```
+OPTIONS /api/v1/packages/{securemail-package-guid}/domains/{domain-guid}
+```
+
+*Response headers*
+```
+409 Conflict
+```
+
+*Response payload*
+
+```
+{
+  "code": 409,
+  "message": "This migration will result in the removal of a service on which active mailboxes depend. The mailboxes must be removed first.",
+  "errors": null
+}
+```
+
+In this case, the migration can not proceed right away, because there are active mailboxes on the domain, which need to be removed.
+
+### Checking if a domain with Cloud Mail Standard can be migrated to Securemail Standard with no active mailboxes remaining
+
+```
+OPTIONS /api/v1/packages/{securemail-package-guid}/domains/{domain-guid}
+```
+
+*Response headers*
+```
+204 No content
+```
+
+### Checking if a domain with legacy Cloud Mail can be migrated to Cloud Mail Plus
+
+```
+OPTIONS /api/v1/packages/{plus-package-guid}/domains/{domain-guid}
+```
+
+*Response headers*
+```
+200 OK
+```
+
+*Response payload*
+
+```
+{
+  "mailbox_edition_map": [
+    {
+      "current_edition": "SYN-CMS-BASIC-02",
+      "new_edition": "CLM-LT",
+      "count": 1
+    },
+    {
+      "current_edition": "SYN-CM-PREM-25-ARCH",
+      "new_edition": "CLM-PLUS-50-ARCH",
+      "count": 2
+    },
+    {
+      "current_edition": "SYN-CM-PREM-100-ARCH",
+      "new_edition": "CLM-PLUS-100-ARCH",
+      "count": 1
+    },
+    {
+      "current_edition": "SYN-CMS-PREM-50",
+      "new_edition": "CLM-PLUS-50-ARCH",
+      "count": 1
+    }
+  ]
+}
+```
+
+In this case, both products have mailbox editions, so the API returns a report showing the upgrade path for each edition in the old package to an edition in the new package.
+
+**Note**: In some cases, such as migrating from a legacy package to a new package, several old editions may be rolled up into one new edition. In such cases, the API reports the counts separately for each **old** edition. It is the responsibility of the integrator to calculate the totals for each new edition, if that information is to be presented to the end user.
 
 ## Moving a domain from one company to another
 
