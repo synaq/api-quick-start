@@ -1,6 +1,6 @@
 # SYNAQ API Quick Start Guide
 
-Valid for release 2020-06-10.1 and later of the SYNAQ API, last updated 2020-06-11.
+Valid for release 2020-07-09.1 and later of the SYNAQ API, last updated 2020-07-10.
 
 # Introduction
 
@@ -17,6 +17,7 @@ The SYNAQ API allows resellers integrated with it to directly manipulate custome
   * [Packages](#packages)
   * [Domains](#domains)
   * [Mailboxes](#mailboxes)
+  * [Distribution Lists](#distribution-lists)
   * [Service fields](#service-fields)
   * [Asynchronous actions](#asynchronous-actions)
   * [Domain (and mailbox) actions](#domain-and-mailbox-actions)
@@ -62,6 +63,12 @@ The SYNAQ API allows resellers integrated with it to directly manipulate custome
     + [Changing the edition (class of service) of a mailbox](#changing-the-edition-class-of-service-of-a-mailbox)
     + [Deleting a mailbox](#deleting-a-mailbox)
     + [Hashed passwords](#hashed-passwords)
+  * [Distribution Lists](#distribution-lists-1)
+    + [Fields for distribution lists](#fields-for-distribution-lists)
+    + [Creating a distribution list on a domain](#creating-a-distribution-list-on-a-domain)
+    + [Provisioning a distribution list](#provisioning-a-distribution-list)
+    + [Updating a distribution list](#updating-a-distribution-list)
+    + [Deleting a distribution list](#deleting-a-distribution-list)
   * [Usage reporting](#usage-reporting)
     + [Detailed usage reports](#detailed-usage-reports)
 - [Full workflow examples for advanced operations](#full-workflow-examples-for-advanced-operations)
@@ -70,7 +77,13 @@ The SYNAQ API allows resellers integrated with it to directly manipulate custome
     + [Migrating from Cloud Mail Legacy to Cloud Mail Standard with Branding](#migrating-from-cloud-mail-legacy-to-cloud-mail-standard-with-branding)
     + [Migrating from Cloud Mail Plus with Branding to Securemail Standard](#migrating-from-cloud-mail-plus-with-branding-to-securemail-standard)
   * [Checking if a domain can be migrated to a new product and how the migration will affect mailbox allocations](#checking-if-a-domain-can-be-migrated-to-a-new-product-and-how-the-migration-will-affect-mailbox-allocations)
+    + [Checking if a domain with Securemail Standard can be migrated to Securemail Premium](#checking-if-a-domain-with-securemail-standard-can-be-migrated-to-securemail-premium)
+    + [Checking if a domain with Securemail Standard can be migrated to Cloud Mail Standard](#checking-if-a-domain-with-securemail-standard-can-be-migrated-to-cloud-mail-standard)
+    + [Checking if a domain with Cloud Mail Standard can be migrated to Securemail Standard with mailboxes still active](#checking-if-a-domain-with-cloud-mail-standard-can-be-migrated-to-securemail-standard-with-mailboxes-still-active)
+    + [Checking if a domain with Cloud Mail Standard can be migrated to Securemail Standard with no active mailboxes remaining](#checking-if-a-domain-with-cloud-mail-standard-can-be-migrated-to-securemail-standard-with-no-active-mailboxes-remaining)
+    + [Checking if a domain with legacy Cloud Mail can be migrated to Cloud Mail Plus](#checking-if-a-domain-with-legacy-cloud-mail-can-be-migrated-to-cloud-mail-plus)
   * [Moving a domain from one company to another](#moving-a-domain-from-one-company-to-another)
+    + [Example](#example)
   * [Adding a new package to an already active domain](#adding-a-new-package-to-an-already-active-domain)
     + [Adding SecureArchive to an existing Securemail Standard domain](#adding-securearchive-to-an-existing-securemail-standard-domain)
 - [Changes between the legacy SYNAQ API and the current structure](#changes-between-the-legacy-synaq-api-and-the-current-structure)
@@ -122,7 +135,15 @@ A domain is a representation in the API of an actual customer domain. Domains ex
 
 ## Mailboxes
 
-For products where mailboxes can be managed directly via the API (SYNAQ CloudMail, Mail Management and Continuity), mailboxes in the API represent actual mailboxes on those services. The API allows creation of mailboxes underneath domains, and then allows the mailboxes to be provisioned onto the actual backing services on the SYNAQ platform.
+For products where mailboxes can be managed directly via the API (all variants of Cloud Mail, Mail Management and Continuity), mailboxes in the API represent actual mailboxes on those services. The API allows creation of mailboxes underneath domains, and then allows the mailboxes to be provisioned onto the actual backing services on the SYNAQ platform.
+
+## Distribution Lists
+Distribution lists are special email adresses which deliver any mail they receive to all members of the list. For products where they can be configured (all variants of Cloud Mail), a distribution list record in the API mirrors and represents an unerlying distribution list on the platform.
+
+The API allows creation and provisioning of distribution lists under domains, as well as updating and removal of those distribution lists.
+
+**Note**
+The current version of the API does not allow the creation or management of distribution lists with restricted sender grants. A request for that feature is in the queue for future consideration.
 
 ## Service fields
 
@@ -1128,6 +1149,185 @@ ssha_password = "{SSHA256}" + base64 ( sha256( password + salt) + salt )
 ```
 salt = four_secure_random_bytes()
 ssha_password = "{SSHA}" + base64 ( sha1( password + salt) + salt )
+```
+
+## Distribution Lists
+
+Distribution lists are a special class of email address which deliver to multiple recipients (members). The API supports configuration and management of distribution lists for Cloud Mail.
+
+### Fields for distribution lists
+
+The important fields for implementing distribution lists are listed here, a full list is available via the API documentation tool. For a successful implementation of DLs, all of these fields should be supported. They can be specified both when creating and updating DLs:
+
+* `email_local` : The local part of the email address for the distribution list under the domain.
+
+* `hide_in_gal`: Boolean flag indicating if the distribution list should be hidden from the global address list
+
+* `members`: An array of objects describing members of the distribution list, taking the following form:
+
+  ```
+  			[
+  				"local": "local.part",
+  				"domain": "domain.name"
+  			]
+  ```
+
+**Notes**
+
+Specifying a different `email_local` when updating the DL wil result in its being renamed. When performing updates, fields which should not change should be omitted from the payload.
+
+The `catch_all_address` field which is visible in the interactive documentation tool for new DLs is deprecated and will be removed in a future version of the API. It should not be implemented for new implementations of DLs in the API, and will not be supported by SYNAQ.
+
+### Creating a distribution list on a domain
+
+```
+POST /api/v1/domains/{domain-guid}/dls.json
+```
+
+**Request payload**
+```
+{
+	"dl": [
+		"email_local": "some.group",
+		"members": [
+			[
+				"local": "some.user",
+				"domain": "some-domain.com"
+			],
+			[
+				"local": "some.other.user",
+				"domain": "some-other-domain.com"
+			]
+		]
+	]
+}
+```
+
+**Response headers:**
+
+```
+201 Created
+Location: /api/v1/dls/{dl-guid}
+```
+
+**Note**
+
+From the above example, it should be obvious that the members of a distribution list do not have to be on the same domain as the distribution list itself.
+
+### Provisioning a distribution list
+
+Once created under a domain, a distribution list must be provisioned using an asynchronous `Provision` action before it will be available.
+
+The action follows the standard process for asynchronous actions.
+
+```
+POST /api/v1/dls/{dl-guid}/actions.json
+```
+
+**Request payload:**
+
+```
+{
+	"action": {
+		"action": "Provision"
+	}
+}
+```
+
+**Response headers:**
+
+```
+202 Accepted
+Location: /api/v1/dls/{dl-guid}/actions/{action-id}
+```
+
+(See [Polling an asynchronous action](#polling-an-asynchronous-action))
+
+### Updating a distribution list
+
+Both inactive and provisioned DLs can be updated using a PATCH call on the DL endpoint. Only the fields to be changed should be included in the payload.
+
+**Note:** When updating a provisioned DL, the API will automatically create an asynchronous `Update` action to propagate the change to actual services. The response will include a reference to the location of this action.
+
+```
+PATCH /api/v1/dls/{dl-guid}.json
+```
+
+**Possible request payload:**
+
+```
+{
+	"dl": {
+    "members": [
+      [
+        "local": "some.user",
+        "domain": "some-domain.com"
+      ],
+      [
+        "local": "some.new.user",
+        "domain": "some-other-domain.com"
+      ]
+    ]
+	}
+}
+```
+
+**Response headers for inactive DLs:**
+
+```
+204 No Content
+```
+
+**Response headers for active DLs:**
+
+```
+202 Accepted
+Location: /api/v1/dls/{dl-guid}/actions/{action-id}
+```
+
+(See [Polling an asynchronous action](#polling-an-asynchronous-action))
+
+### Deleting a distribution list
+
+Unlike mailboxes, active distribution lists must first be "deleted" from the platform before being deleted from the API records, in the same way domains are deleted, by posting an asynchronous `Delete` action for the DL.
+
+**Deletion of an active DL from the platform**
+
+```
+POST /api/v1/dls/{dl-guid}/actions.json
+```
+
+**Request payload:**
+
+```
+{
+	"action": {
+		"action": "Delete"
+	}
+}
+```
+
+**Response headers:**
+
+```
+202 Accepted
+Location: /api/v1/dls/{dl-guid}/actions/{action-id}
+```
+
+(See [Polling an asynchronous action](#polling-an-asynchronous-action))
+
+Once the action completes, the inactive DL can be deleted from the API records.
+
+**Deleting an inactive DL from the API records**
+
+```
+DELETE /api/v1/dls/{dl-guid}.json
+```
+
+**Response headers:**
+
+```
+204 No Content
 ```
 
 ## Usage reporting
