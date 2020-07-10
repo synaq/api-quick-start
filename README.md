@@ -1258,16 +1258,16 @@ PATCH /api/v1/dls/{dl-guid}.json
 ```
 {
 	"dl": {
-    "members": [
-      [
-        "local": "some.user",
-        "domain": "some-domain.com"
-      ],
-      [
-        "local": "some.new.user",
-        "domain": "some-other-domain.com"
-      ]
-    ]
+		"members": [
+			[
+				"local": "some.user",
+				"domain": "some-domain.com"
+			],
+			[
+				"local": "some.new.user",
+				"domain": "some-other-domain.com"
+			]
+		]
 	}
 }
 ```
