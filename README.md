@@ -1,6 +1,6 @@
 # SYNAQ API Quick Start Guide
 
-Valid for release 2020-07-09.1 and later of the SYNAQ API, last updated 2020-07-10.
+Valid for release 2020-09-21.1 and later of the SYNAQ API, last updated 2020-09-21.
 
 # Introduction
 
@@ -18,6 +18,7 @@ The SYNAQ API allows resellers integrated with it to directly manipulate custome
   * [Domains](#domains)
   * [Mailboxes](#mailboxes)
   * [Distribution Lists](#distribution-lists)
+  * [Calendar Resources](#calendar-resources)
   * [Service fields](#service-fields)
   * [Asynchronous actions](#asynchronous-actions)
   * [Domain (and mailbox) actions](#domain-and-mailbox-actions)
@@ -69,6 +70,11 @@ The SYNAQ API allows resellers integrated with it to directly manipulate custome
     + [Provisioning a distribution list](#provisioning-a-distribution-list)
     + [Updating a distribution list](#updating-a-distribution-list)
     + [Deleting a distribution list](#deleting-a-distribution-list)
+  * [Calendar Resources](#calendar-resources-1)
+    + [Fields for calendar resources](#fields-for-calendar-resources)
+    + [Creating a calendar resource on a domain](#creating-a-calendar-resource-on-a-domain)
+    + [Provisioning a calendar resource](#provisioning-a-calendar-resource)
+    + [Deleting a calendar resource](#deleting-a-calendar-resource)
   * [Usage reporting](#usage-reporting)
     + [Detailed usage reports](#detailed-usage-reports)
 - [Full workflow examples for advanced operations](#full-workflow-examples-for-advanced-operations)
@@ -138,12 +144,18 @@ A domain is a representation in the API of an actual customer domain. Domains ex
 For products where mailboxes can be managed directly via the API (all variants of Cloud Mail, Mail Management and Continuity), mailboxes in the API represent actual mailboxes on those services. The API allows creation of mailboxes underneath domains, and then allows the mailboxes to be provisioned onto the actual backing services on the SYNAQ platform.
 
 ## Distribution Lists
-Distribution lists are special email adresses which deliver any mail they receive to all members of the list. For products where they can be configured (all variants of Cloud Mail), a distribution list record in the API mirrors and represents an unerlying distribution list on the platform.
+Distribution lists are special email addresses which deliver any mail they receive to all members of the list. For products where they can be configured (all variants of Cloud Mail), a distribution list record in the API mirrors and represents an unerlying distribution list on the platform.
 
 The API allows creation and provisioning of distribution lists under domains, as well as updating and removal of those distribution lists.
 
 **Note**
 The current version of the API does not allow the creation or management of distribution lists with restricted sender grants. A request for that feature is in the queue for future consideration.
+
+## Calendar Resources
+
+Distribution lists are special email addresses which act as place holders for shared resources when booking meetings. A calendar resource could refer to a meeting room, a projector, or in general to any shared location or equipment which needs to be booked prior to use.
+
+The API allows creation and provisioning of calendar resources under active domains on all Cloud Mail products, as well as deletion of calendar resources. Support for updating calendar resources will be added in an upcoming release.
 
 ## Service fields
 
@@ -1289,7 +1301,7 @@ Location: /api/v1/dls/{dl-guid}/actions/{action-id}
 
 ### Deleting a distribution list
 
-Unlike mailboxes, active distribution lists must first be "deleted" from the platform before being deleted from the API records, in the same way domains are deleted, by posting an asynchronous `Delete` action for the DL.
+Unlike mailboxes, active distribution lists must be "deleted" from the platform in the same way domains are deleted, by posting an asynchronous `Delete` action for the DL.
 
 **Deletion of an active DL from the platform**
 
@@ -1316,12 +1328,128 @@ Location: /api/v1/dls/{dl-guid}/actions/{action-id}
 
 (See [Polling an asynchronous action](#polling-an-asynchronous-action))
 
-Once the action completes, the inactive DL can be deleted from the API records.
+Once the action completes, the inactive DL will be automatically deleted from the API records.
 
 **Deleting an inactive DL from the API records**
 
+If a distribution list was never provisioned, the record can be deleted from the API directly.
+
 ```
 DELETE /api/v1/dls/{dl-guid}.json
+```
+
+**Response headers:**
+
+```
+204 No Content
+```
+
+## Calendar Resources
+
+Calendar resources are a special class of email address which acts as a place holder for shared locations or equipment which must be booked for meetings or other uses.
+
+### Fields for calendar resources
+
+The important fields for implementing calendar resources are listed here, a full list is available via the API documentation tool. For a successful implementation of calendar resources, all of these fields should be supported:
+
+* `email_local` : The local part of the email address for the calendar resource under the domain.
+* `password`: A plain text password for the calendar resource. This will be automatically converted to an SSHA266 hash by the API if provided. It can be omitted if the `ssha_password` field is provided.
+* `ssha_password`: An SSHA256 hashed password, marked with a {SSHA256} format tag. This is a more secure alternative to sending a plain text password.
+* `display_name`: The display name to use for the calendar resource in the global address list and its responses to meeting requests.
+* `resource_type`: The type of calendar resource, valid values are `Location` and `Equipment`.
+
+### Creating a calendar resource on a domain
+
+```
+POST /api/v1/domains/{domain-guid}/resources.json
+```
+
+**Request payload**
+
+```
+{
+	"dl": [
+		"email_local": "some.boardroom",
+		"password": "SomePassw0rd$",
+		"display_name": "Some boardroom",
+		"resource_type": "Location"
+	]
+}
+```
+
+**Response headers:**
+
+```
+201 Created
+Location: /api/v1/resources/{resource-guid}
+```
+
+### Provisioning a calendar resource
+
+Once created under a domain, a calendar resource must be provisioned using an asynchronous `Provision` action before it will be available.
+
+The action follows the standard process for asynchronous actions.
+
+```
+POST /api/v1/resources/{resource-guid}/actions.json
+```
+
+**Request payload:**
+
+```
+{
+	"action": {
+		"action": "Provision"
+	}
+}
+```
+
+**Response headers:**
+
+```
+202 Accepted
+Location: /api/v1/resources/{resource-guid}/actions/{action-id}
+```
+
+(See [Polling an asynchronous action](#polling-an-asynchronous-action))
+
+### Deleting a calendar resource
+
+Unlike mailboxes, active calendar resources must be "deleted" from the platform using a service action, in the same way domains are deleted, by posting an asynchronous `Delete` action for the resource.
+
+**Deletion of an active calendar resource from the platform**
+
+```
+POST /api/v1/resources/{resource-guid}/actions.json
+```
+
+**Request payload:**
+
+```
+{
+	"action": {
+		"action": "Delete"
+	}
+}
+```
+
+**Response headers:**
+
+```
+202 Accepted
+Location: /api/v1/resources/{resource-guid}/actions/{action-id}
+```
+
+(See [Polling an asynchronous action](#polling-an-asynchronous-action))
+
+Once the action completes, the inactive resource will automatically be deleted from the API records.
+
+**Deleting an inactive calendar resource from the API records**
+
+If a resource was never provisioned, the inactive record can be deleted from the API directly.
+
+```
+DELETE /api/v1/resources/{resources-guid}.json
 ```
 
 **Response headers:**
