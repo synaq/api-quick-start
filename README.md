@@ -153,7 +153,7 @@ The current version of the API does not allow the creation or management of dist
 
 ## Calendar Resources
 
-Distribution lists are special email addresses which act as place holders for shared resources when booking meetings. A calendar resource could refer to a meeting room, a projector, or in general to any shared location or equipment which needs to be booked prior to use.
+Calendar resources are special email addresses which act as place holders for shared resources when booking meetings. A calendar resource could refer to a meeting room, a projector, or in general to any shared location or equipment which needs to be booked prior to use.
 
 The API allows creation and provisioning of calendar resources under active domains on all Cloud Mail products, as well as deletion of calendar resources. Support for updating calendar resources will be added in an upcoming release.
 
