@@ -1,6 +1,6 @@
 # SYNAQ API Quick Start Guide
 
-Valid for release 2020-09-21.1 and later of the SYNAQ API, last updated 2020-09-21.
+Valid for release 2020-09-22.1 and later of the SYNAQ API, last updated 2020-09-23.
 
 # Introduction
 
@@ -74,6 +74,7 @@ The SYNAQ API allows resellers integrated with it to directly manipulate custome
     + [Fields for calendar resources](#fields-for-calendar-resources)
     + [Creating a calendar resource on a domain](#creating-a-calendar-resource-on-a-domain)
     + [Provisioning a calendar resource](#provisioning-a-calendar-resource)
+    + [Updating a calendar resource](#updating-a-calendar-resource)
     + [Deleting a calendar resource](#deleting-a-calendar-resource)
   * [Usage reporting](#usage-reporting)
     + [Detailed usage reports](#detailed-usage-reports)
@@ -1368,7 +1369,7 @@ POST /api/v1/domains/{domain-guid}/resources.json
 
 ```
 {
-	"dl": [
+	"resource": [
 		"email_local": "some.boardroom",
 		"password": "SomePassw0rd$",
 		"display_name": "Some boardroom",
@@ -1405,6 +1406,44 @@ POST /api/v1/resources/{resource-guid}/actions.json
 ```
 
 **Response headers:**
+
+```
+202 Accepted
+Location: /api/v1/resources/{resource-guid}/actions/{action-id}
+```
+
+(See [Polling an asynchronous action](#polling-an-asynchronous-action))
+
+### Updating a calendar resource
+
+Both inactive and provisioned calendar resources can be updated using a PATCH call on the resources endpoint. Only the fields to be changed should be included in the payload.
+
+**Note:** When updating a provisioned resource, the API will automatically create an asynchronous `Update` action to propagate the change to actual services. The response will include a reference to the location of this action.
+
+```
+PATCH /api/v1/resources/{resource-guid}.json
+```
+
+**Possible request payload:**
+
+```
+{
+	"resource": [
+		"email_local": "some.projector",
+		"password": "NewPassw0rd!",
+		"display_name": "Some Projector",
+		"resource_type": "Equipment"
+	]
+}
+```
+
+**Response headers for inactive resources:**
+
+```
+204 No Content
+```
+
+**Response headers for active resources:**
 
 ```
 202 Accepted
