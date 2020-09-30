@@ -1,13 +1,12 @@
 # SYNAQ API Quick Start Guide
 
-Valid for release 2020-09-22.1 and later of the SYNAQ API, last updated 2020-09-23.
+Valid for release 2020-09-30.1 and later of the SYNAQ API, last updated 2020-09-30.
 
 # Introduction
 
 The SYNAQ API allows resellers integrated with it to directly manipulate customer data, and provision and manage SYNAQ services under domains for their customers.
 
 # Contents
-
 - [New API and product structure](#new-api-and-product-structure)
   * [Legacy API documentation](#legacy-api-documentation)
 - [Basic concepts](#basic-concepts)
@@ -61,6 +60,7 @@ The SYNAQ API allows resellers integrated with it to directly manipulate custome
     + [Closing a mailbox](#closing-a-mailbox)
     + [Reactivating a mailbox](#reactivating-a-mailbox)
     + [Unlocking a mailbox](#unlocking-a-mailbox)
+    + [Generating an authentication token for a mailbox](#generating-an-authentication-token-for-a-mailbox)
     + [Changing the edition (class of service) of a mailbox](#changing-the-edition-class-of-service-of-a-mailbox)
     + [Deleting a mailbox](#deleting-a-mailbox)
     + [Hashed passwords](#hashed-passwords)
@@ -1067,6 +1067,92 @@ Location: /api/v1/mailboxes/{mailbox-guid}/actions/{action-id}
 ```
 
 (See [Polling an asynchronous action](#polling-an-asynchronous-action))
+
+### Generating an authentication token for a mailbox
+
+Administrators or support staff may occasionally need to directly log in to a mailbox in order to trouble shoot problems with the web mail service, or assist clients in configuration or maintenance tasks. In these cases, it is undesirable to expose authentication credentials for the mailbox directly to the staff member, and they should instead be permitted to log in to the mailbox without a password, if that mailbox is in their scope.
+
+To facilitate logins without exposing credentials to staff members, an authentication token can be generated for the mailbox, and used to directly authenticate the user to the web mail service, by redirecting the user's browser to the service and including the token as a request parameter.
+
+**Important note:**
+
+Integrators are strongly encouraged to restrict the availability of this use case to special trusted classes of users, and keep an audit log of its use, to prevent unauthorised use of the feature and associated security compromises.
+
+**Generating tokens:**
+
+Before a token can be retrieved for a mailbox, one must be generated using the `Token` action on the mailbox. This action is only permitted for active mailboxes.
+
+**Request:**
+
+```
+POST /api/v1/mailboxes/{mailbox-guid}/actions.json
+```
+
+**Request payload:**
+
+```
+{
+	"action": {
+		"action": "Token"
+	}
+}
+```
+
+**Response headers:**
+
+```
+202 Accepted
+Location: /api/v1/mailboxes/{mailbox-guid}/actions/{action-id}
+```
+
+(See [Polling an asynchronous action](#polling-an-asynchronous-action))
+
+**Retrieving tokens:**
+
+Once a token has been generated for a mailbox, it can be retrieved using the special token endpoint on that mailbox. If no valid token exists, the endpoint will return an empty response. In this case, a new token must be generated. If an existing token is available and still within its validity period, it will be returned, along with the expiration date, so that the integrator can cache the date if desired.
+
+Storing of the actual token itself is strongly discouraged, instead, it is recommended that only the expiry date of the most recent token is stored, and this is used to decide if a new token should be requested, or the existing token retrieved from the API without attempting to generate one first. Integrators should always anticipate the possibility that no valid token exists, and fall back to requesting one in that event.
+
+Attempting to retrieve a token for a mailbox which is not in the `active` state will result in an error.
+
+**Request:**
+
+```
+GET /api/v1/mailboxes/{mailbox-guid}/token.json
+```
+
+**Response if a valid token exists:**
+
+```
+200 OK
+
+{
+	"authentication_token": "EXAMPLE_TOKEN",
+	"authentication_token_expiry": "2020-10-10T10:10:00+0200"
+}
+```
+
+**Response if no valid token is available:**
+
+```
+204 No Content
+```
+
+**Directing the user's browser to the web mail service:**
+
+The user can new be directed to the mailbox using the token and the public web mail host name. Having the browser perform this operation in a new tab or new window is highly recommended. The URL to direct the browser to is as follows:
+
+```
+https://public-webmail-hostname.host.com/?zauthtoken={TOKEN}
+```
+
+For example, if the hostname were `mail.provider.com` and token string `SOME_TOKEN_1234`, the browser should be directed to:
+
+```
+https://mail.provider.com/?zauthtoken=SOME_TOKEN_1234
+```
+
+Since tokens can remain valid for extended periods depending on server configuration, they should never be transmitted across unencrypted connections, so integrators are strongly encouraged to strictly enforce the use of HTTPS for public service host names. Integrators are also encouraged to make the host name configurable, to allow for white labelling or custom configurations for individual customers if desired.
 
 ### Changing the edition (class of service) of a mailbox
 
