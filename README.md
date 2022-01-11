@@ -78,6 +78,7 @@ The SYNAQ API allows resellers integrated with it to directly manipulate custome
     + [Deleting a calendar resource](#deleting-a-calendar-resource)
   * [Usage reporting](#usage-reporting)
     + [Detailed usage reports](#detailed-usage-reports)
+    + [Mailbox metadata](#mailbox-metadata)
 - [Full workflow examples for advanced operations](#full-workflow-examples-for-advanced-operations)
   * [Polling an asynchronous action](#polling-an-asynchronous-action)
   * [Migrating a domain from one product to another](#migrating-a-domain-from-one-product-to-another)
@@ -1778,6 +1779,59 @@ GET /api/v1/domains/{domain-guid}/usage.json
         "warning": null,
         "problem": null,
         "class_of_service": null
+      }
+    ]
+  }
+}
+```
+
+### Mailbox metadata
+
+Since API release 2021-11-23.1, for some domains, the detailed usage reporting endpoint will return additional metadata for each billable mailbox. This data is collated in a separate metadata array in the root of the response, and will have an entry for each mailbox for which metadata is available. There is no guarantee that all mailboxes will have metadata, and it is also possible for metadata fields to vary between mailboxes, so no assumptions should be made as to the presence of particular fields. They should be treated as optional, and only processed when available.
+
+**Sample response for a domain with Cloud Mail Plus and selected mailbox metadata:**
+
+```
+{
+  "domain_usage_report": {
+    "state": "finished",
+    "data_as_at": "2022-01-11T09:35:00+0200",
+    "edition_usage_reports": [
+      {
+        "edition_code": "CLM-PLUS-50-ARCH",
+        "count": 2,
+        "billable_mailboxes": [
+          "user@domain.com",
+          "another@domain.com",
+          "third@domain.com"
+        ],
+        "warning": null,
+        "problem": null,
+        "class_of_service": null
+      }
+    ],
+    "mailbox_metadata": [
+      {
+        "address": "user@domain.com",
+        "fields": [
+          {
+            "field": "description",
+            "value": "Some description"
+          },
+          {
+            "field": "password_last_modified",
+            "value": "20220107072235Z"
+          }
+        ]
+      },
+      {
+        "address": "another@domain.com",
+        "fields": [
+          {
+            "field": "password_last_modified",
+            "value": "20210610110855Z"
+          }
+        ]
       }
     ]
   }
