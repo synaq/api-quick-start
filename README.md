@@ -1,6 +1,6 @@
 # SYNAQ API Quick Start Guide
 
-Valid for release 2021-12-01.2 and later of the SYNAQ API, last updated 2022-01-11.
+Valid for release 2022-02-18.1 and later of the SYNAQ API, last updated 2022-02-21.
 
 # Introduction
 
@@ -62,6 +62,7 @@ The SYNAQ API allows resellers integrated with it to directly manipulate custome
     + [Unlocking a mailbox](#unlocking-a-mailbox)
     + [Generating an authentication token for a mailbox](#generating-an-authentication-token-for-a-mailbox)
     + [Changing the edition (class of service) of a mailbox](#changing-the-edition-class-of-service-of-a-mailbox)
+    + [Checking DL membership for a mailbox](#checking-dl-membership-for-a-mailbox)
     + [Deleting a mailbox](#deleting-a-mailbox)
     + [Hashed passwords](#hashed-passwords)
   * [Distribution Lists](#distribution-lists-1)
@@ -1193,6 +1194,46 @@ Location: /api/v1/mailboxes/{mailbox-guid}/actions/{action-id}
 (See [Polling an asynchronous action](#polling-an-asynchronous-action))
 
 **Note:** Any valid edition code on the package may be specified. In the above example, a mailbox is upgraded to the 100GB option with Archiving on a Cloud Mail Standard package. It could also have been downgraded to a basic 2GB mailbox by using the appropriate edition code, for example `CLM-LT`. The valid editions on a package may be verified by using the GET call on the package itself.
+
+### Checking DL membership for a mailbox
+
+For mailboxes on any of the Cloud Mail products, it is possible to determine which distribution lists (if any) the mailbox belongs to, as of release 2022-02-18.1.
+
+**Note**:
+
+* Only avilable for active (provisined) mailboxes.
+* Only distribution lists belonging to the same company will be returned.
+
+```
+GET /api/v1/mailboxes/{mailbox-guid}/membership.json
+```
+
+**Sample response**
+
+```
+{
+  "guid": "mailbox-guid",
+  "email": "mailbox@domain.com",
+  "dls": [
+    {
+      "guid": "dl-guid",
+      "hide_in_gal": false,
+      "state": "active",
+      "type": "dl",
+      "email": "some.dl@domain.com",
+      "catch_all_address": false,
+    },
+    {
+      "guid": "another-dl-guid",
+      "hide_in_gal": false,
+      "state": "active",
+      "type": "dl",
+      "email": "another.dl@domain.com",
+      "catch_all_address": false,
+    }
+  ]
+}
+```
 
 ### Deleting a mailbox
 
