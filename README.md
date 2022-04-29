@@ -1,6 +1,6 @@
 # SYNAQ API Quick Start Guide
 
-Valid for release 2022-02-18.1 and later of the SYNAQ API, last updated 2022-02-21.
+Valid for release 2022-04-29.2 and later of the SYNAQ API, last updated 2022-04-29.
 
 # Introduction
 
@@ -52,6 +52,7 @@ The SYNAQ API allows resellers integrated with it to directly manipulate custome
     + [Unlinking a domain from a package](#unlinking-a-domain-from-a-package)
     + [Refreshing a domain](#refreshing-a-domain)
   * [Mailboxes](#mailboxes-1)
+    + [Searching for mailboxes](#searching-for-mailboxes)
     + [Creating a mailbox under a domain](#creating-a-mailbox-under-a-domain)
     + [Provisioning a mailbox](#provisioning-a-mailbox)
     + [Creating a mailbox under a domain and provisioning it immediately](#creating-a-mailbox-under-a-domain-and-provisioning-it-immediately)
@@ -66,17 +67,19 @@ The SYNAQ API allows resellers integrated with it to directly manipulate custome
     + [Deleting a mailbox](#deleting-a-mailbox)
     + [Hashed passwords](#hashed-passwords)
   * [Distribution Lists](#distribution-lists-1)
-    + [Fields for distribution lists](#fields-for-distribution-lists)
-    + [Creating a distribution list on a domain](#creating-a-distribution-list-on-a-domain)
-    + [Provisioning a distribution list](#provisioning-a-distribution-list)
-    + [Updating a distribution list](#updating-a-distribution-list)
-    + [Deleting a distribution list](#deleting-a-distribution-list)
+    * [Searching for distribution lists](#searching-for-distribution-lists)
+    * [Fields for distribution lists](#fields-for-distribution-lists)
+    * [Creating a distribution list on a domain](#creating-a-distribution-list-on-a-domain)
+    * [Provisioning a distribution list](#provisioning-a-distribution-list)
+    * [Updating a distribution list](#updating-a-distribution-list)
+    * [Deleting a distribution list](#deleting-a-distribution-list)
   * [Calendar Resources](#calendar-resources-1)
-    + [Fields for calendar resources](#fields-for-calendar-resources)
-    + [Creating a calendar resource on a domain](#creating-a-calendar-resource-on-a-domain)
-    + [Provisioning a calendar resource](#provisioning-a-calendar-resource)
-    + [Updating a calendar resource](#updating-a-calendar-resource)
-    + [Deleting a calendar resource](#deleting-a-calendar-resource)
+    * [Searching for calendar resources](#searching-for-calendar-resources)
+    * [Fields for calendar resources](#fields-for-calendar-resources)
+    * [Creating a calendar resource on a domain](#creating-a-calendar-resource-on-a-domain)
+    * [Provisioning a calendar resource](#provisioning-a-calendar-resource)
+    * [Updating a calendar resource](#updating-a-calendar-resource)
+    * [Deleting a calendar resource](#deleting-a-calendar-resource)
   * [Usage reporting](#usage-reporting)
     + [Detailed usage reports](#detailed-usage-reports)
     + [Mailbox metadata](#mailbox-metadata)
@@ -797,6 +800,61 @@ Once the action reports a state of `finished`, the domain will be in the `active
 
 ## Mailboxes
 
+### Searching for mailboxes
+
+Any mailbox in the user's scope can be found using the global mailboxes endpoint. There are rich filters available on the call to limit the scope of mailbox searches futher, most importantly, `domain_guid` and `domain_name`.
+
+```
+GET /api/v1/mailboxes.json?domain_guid={some_guid}&exact_match=1
+```
+
+```
+{
+  "page": 1,
+  "limit": 5,
+  "pages": 1,
+  "total": 1,
+  "_embedded": {
+    "mailboxes": [
+      {
+        "guid": "SOME-GUID",
+        "first_name": null,
+        "last_name": "Last Name",
+        "display_name": "Some Display Name
+        "from_name": null,
+        "admin": false,
+        "description": null,
+        "branch": null,
+        "hide_in_gal": false,
+        "state": "active",
+        "type": "mailbox",
+        "packages": [
+          {
+            "state": "active",
+            "code": "CLM-STD",
+            "edition_code": "CLM-STD-50-ARCH",
+            "guid": "SOME-PACKAGE-GUID"
+          }
+        ],
+        "email": "address@domain.com",
+        "aliases": [],
+        "catch_all_address": null,
+        "zimbra_mail_store": "some-host.domain.com",
+        "account_locked": false,
+        "auth_locked": false,
+        "spam_locked": false
+      }
+    ]
+```
+
+The `exact_match` modifier returns only mailboxes which exactly match the filter criteria, If not set, any mailbox where the local part and domain name specified **are part of the local part and domain** will be returned.
+
+In general, we encourage always using ```exact_match```, unless you have a specific use case requiring partial matches.
+
+When `domain_guid` or `domain_name` are specified, the results will automatically be ordered by the local part of the address in ascending order. If descending order is required, set the `sort_descending` flag.
+
+For a ful and up to datel list of filters and modifiers, as well as pagination options, please see the API documentation tool.
+
 ### Creating a mailbox under a domain
 
 For products where mailboxes are directly exposed via the API, such as Cloud Mail, Continuity and Mailbox Management, a mailbox may be created and provisioned under a domain once the domain has been provisioned.
@@ -1296,6 +1354,14 @@ ssha_password = "{SSHA}" + base64 ( sha1( password + salt) + salt )
 
 Distribution lists are a special class of email address which deliver to multiple recipients (members). The API supports configuration and management of distribution lists for Cloud Mail.
 
+### Searching for distribution lists
+
+The API exposes a global distribution list endpoint. The operation is the same as the global mailbox endpoint, please see [Searching for mailboxes](#searching-for-mailboxes) for more details, or consult the API documentation tool.
+
+```
+GET /api/v1/dls.json?domain_guid={SOME-GUID}&exact_match=1
+```
+
 ### Fields for distribution lists
 
 The important fields for implementing distribution lists are listed here, a full list is available via the API documentation tool. For a successful implementation of DLs, all of these fields should be supported. They can be specified both when creating and updating DLs:
@@ -1476,6 +1542,14 @@ DELETE /api/v1/dls/{dl-guid}.json
 ## Calendar Resources
 
 Calendar resources are a special class of email address which acts as a place holder for shared locations or equipment which must be booked for meetings or other uses.
+
+### Searching for calendar resources
+
+The API exposes a global calendar resource endpoint. The operation is the same as the global mailbox endpoint, please see [Searching for mailboxes](#searching-for-mailboxes) for more details, or consult the API documentation tool.
+
+```
+GET /api/v1/resources.json?domain_guid={SOME-GUID}&exact_match=1
+```
 
 ### Fields for calendar resources
 
