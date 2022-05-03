@@ -802,7 +802,7 @@ Once the action reports a state of `finished`, the domain will be in the `active
 
 ### Searching for mailboxes
 
-Any mailbox in the user's scope can be found using the global mailboxes endpoint. There are rich filters available on the call to limit the scope of mailbox searches futher, most importantly, `domain_guid` and `domain_name`.
+Any mailbox in the user's scope can be found using the global mailboxes endpoint. There are rich filters available on the call to limit the scope of mailbox searches further, most importantly, `domain_guid` and `domain_name`.
 
 ```
 GET /api/v1/mailboxes.json?domain_guid={some_guid}&exact_match=1
@@ -820,7 +820,7 @@ GET /api/v1/mailboxes.json?domain_guid={some_guid}&exact_match=1
         "guid": "SOME-GUID",
         "first_name": null,
         "last_name": "Last Name",
-        "display_name": "Some Display Name
+        "display_name": "Some Display Name"
         "from_name": null,
         "admin": false,
         "description": null,
@@ -853,7 +853,7 @@ In general, we encourage always using ```exact_match```, unless you have a speci
 
 When `domain_guid` or `domain_name` are specified, the results will automatically be ordered by the local part of the address in ascending order. If descending order is required, set the `sort_descending` flag.
 
-For a ful and up to datel list of filters and modifiers, as well as pagination options, please see the API documentation tool.
+For a ful and up to date list of filters and modifiers, as well as pagination options, please see the API documentation tool.
 
 ### Creating a mailbox under a domain
 
