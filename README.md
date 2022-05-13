@@ -1,6 +1,6 @@
 # SYNAQ API Quick Start Guide
 
-Valid for release 2022-04-29.2 and later of the SYNAQ API, last updated 2022-05-03.
+Valid for release 2022-04-29.2 and later of the SYNAQ API, last updated 2022-05-13.
 
 # Introduction
 
@@ -1203,7 +1203,7 @@ GET /api/v1/mailboxes/{mailbox-guid}/token.json
 The user can new be directed to the mailbox using the token and the public web mail host name. Having the browser perform this operation in a new tab or new window is highly recommended. The URL to direct the browser to is as follows:
 
 ```
-https://public-webmail-hostname.host.com/?zauthtoken={TOKEN}
+https://{domain.public.service.host.name}/service/preauth?authtoken={token}&isredirect=1&adminPreAuth=1
 ```
 
 For example, if the hostname were `mail.provider.com` and token string `SOME_TOKEN_1234`, the browser should be directed to:
