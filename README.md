@@ -96,8 +96,6 @@ The SYNAQ API allows resellers integrated with it to directly manipulate custome
     + [Checking if a domain with legacy Cloud Mail can be migrated to Cloud Mail Plus](#checking-if-a-domain-with-legacy-cloud-mail-can-be-migrated-to-cloud-mail-plus)
   * [Moving a domain from one company to another](#moving-a-domain-from-one-company-to-another)
     + [Example](#example)
-  * [Adding a new package to an already active domain](#adding-a-new-package-to-an-already-active-domain)
-    + [Adding SecureArchive to an existing Securemail Standard domain](#adding-securearchive-to-an-existing-securemail-standard-domain)
 - [Changes between the legacy SYNAQ API and the current structure](#changes-between-the-legacy-synaq-api-and-the-current-structure)
   * [New product bundles](#new-product-bundles)
   * [Product group codes and edition codes](#product-group-codes-and-edition-codes)
@@ -2509,119 +2507,6 @@ Location: /api/v1/packages/{NEW-CLOUD-MAIL-PLUS-GUID}/actions/{action-id}
 ```
 
 The action should now be polled using the standard process for polling asynchronous actions. See the documentation section on [polling an asynchronous action](#polling-an-asynchronous-action) for full details.
-
-## Adding a new package to an already active domain
-
-It is occasionally necessary to add another package to an already active domain, although this is mostly not needed since the introduction of the new product bundles.
-
-One potential remaining use case is adding SecureArchive to a SecureMail Standard domain, though up-selling the user to Mail Management Standard in that case would be preferred and recommended.
-
-The workflow for any such use case is roughly the same, so for the sake of brevity, we will only demonstrate the SecureArchive bolt-on use case here.
-
-### Adding SecureArchive to an existing Securemail Standard domain
-
-These instructions assume that we have an existing domain with the imaginary GUID `securemail-domain-guid` already provisioned via the API, and currently in an active state.
-
-**Step 1: Create SecureArchive package under the company** 
-
-*Request*
-
-```
-POST /api/v1/ous/{company-guid}/packages
-```
-
-*Payload*
-
-```
-{
-    "package": {
-        "code":"AR-SEC"
-    }
-}
-```
-*Response headers*
-
-```
-201 Created
-location: /api/v1/packages/{archive-package-guid}
-```
-
-**Step 2: Link the new SecureArchive package to the domain**
-
-*Request*
-
-```
-LINK /api/v1/packages/{archive-package-guid}/domains/{cloud-mail-domain-guid}
-```
-
-*Response headers*
-
-```
-204 No Content
-```
-
-**Note**
-
-At this point, the existing domain will have switched from the `active` to the `pending` state. This is expected, as there are now some services on the domain which are not yet provisioned and configured.
-
-**Step 3: Configure service fields for the domain**
-
-*Request*
-
-```
-PATCH /api/v1/domains/{securemail-domain-guid}/servicefields.json
-```
-
-*Payload*
-
-```
-{
-	"fields": {
-   		"auth_method": "smtp",
-   		"username": "smtp-username",
-   		"password": "smtpPassw0rd!",
-   		"admin_username": "some@person.com",
-   		"admin_password": "adminPassw0rd!",
-   		"instance_name": "archive-instance-name",
-   		"growth_rate": 100
-   	}
-}
-```
-
-*Response headers*
-
-```
-204 No Content
-```
-
-**Step 4: Provision the new package**
-
-*Request*
-
-```
-POST /api/v1/packages/{archive-package-guid}/actions
-```
-
-*Payload*
-
-```
-{
-    "action": {
-        "action": "Provision"
-    }
-}
-```
-
-*Response headers*
-
-```
-202 Accepted
-Location: /api/v1/packages/{archive-package-guid}/actions/{action-id}
-```
-
-The action should now be polled using the standard process for polling asynchronous actions. See the documentation section on [polling an asynchronous action](#polling-an-asynchronous-action) for full details.
-
-Once the action is complete, the additional package has been properly provisioned on the domain.
 
 # Changes between the legacy SYNAQ API and the current structure
 
