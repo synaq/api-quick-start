@@ -529,6 +529,8 @@ Additional service information is required to be configured before a domain can 
 
 To determine which fields require information, the general use GET endpoint for domains may be used with the given domain GUID, and the `fields` object may be inspected.
 
+**Important Note:** For legacy compatibility reasons, any endpoints which expose the **smtp_username** and **smtp_password** fields should have the same values duplicated as **username** and **password**.
+
 **Note:** The endpoint also exposes a legacy `service_fields` object, which was used in a previous mechanism for retrieving information passed back from the services. Please do no confuse that object for `fields` as described above.
 
 ```
