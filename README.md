@@ -651,7 +651,7 @@ A closed domain will not process incoming mail, nor allow outgoing mail to be re
 To close a domain, create an asynchronous `Close` action on the domain actions endpoint. Poll the action as usual.
 
 ```
-POST /api/v1/packages/{package-guid}/actions.json
+POST /api/v1/domains/{domain-guid}/actions.json
 ```
 
 **Request payload:**
@@ -668,7 +668,7 @@ POST /api/v1/packages/{package-guid}/actions.json
 
 ```
 202 Accepted
-location: /api/v1/packages/{package-guid}/actions/{action-id}
+location: /api/v1/domains/{domain-guid}/actions/{action-id}
 ```
 
 (See [Polling an asynchronous action](#polling-an-asynchronous-action))
@@ -678,7 +678,7 @@ location: /api/v1/packages/{package-guid}/actions/{action-id}
 A closed domain may be reactivated (returned to service) by using the asynchronous `Activate` action.
 
 ```
-POST /api/v1/packages/{package-guid}/actions.json
+POST /api/v1/domains/{domain-guid}/actions.json
 ```
 
 **Request payload:**
@@ -695,7 +695,7 @@ POST /api/v1/packages/{package-guid}/actions.json
 
 ```
 202 Accepted
-location: /api/v1/packages/{package-guid}/actions/{action-id}
+location: /api/v1/domains/{domain-guid}/actions/{action-id}
 ```
 
 (See [Polling an asynchronous action](#polling-an-asynchronous-action))
