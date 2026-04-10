@@ -39,7 +39,7 @@ The SYNAQ API allows resellers to directly manage customer data and provision SY
 | [Organisations (OUs)](docs/ous.md) | Create and manage customer companies |
 | [Packages](docs/packages.md) | Create, provision, cancel, and delete product packages |
 | [Domains](docs/domains.md) | Full domain lifecycle: create, link, configure, provision, suspend, delete |
-| [Mailboxes](docs/mailboxes.md) | Mailbox management, auth tokens, edition changes, hashed passwords |
+| [Mailboxes](docs/mailboxes.md) | Mailbox lifecycle, auth tokens, edition changes, whitelists, blacklists, signatures, quota, folder stats, access and mail statistics |
 | [Distribution Lists](docs/distribution-lists.md) | Create and manage email groups |
 | [Calendar Resources](docs/calendar-resources.md) | Create and manage bookable resources |
 | [Usage Reporting](docs/usage-reporting.md) | Trigger and retrieve billing usage reports |
