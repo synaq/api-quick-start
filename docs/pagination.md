@@ -43,6 +43,8 @@ GET /api/v1/mailboxes.json?domain_guid={guid}&exact_match=1&page=2&limit=25
 
 ## Iterating all results
 
+**PHP**
+
 ```php
 function getAll(string $baseUrl, string $path, array $params, array $headers): array {
     $results = [];
@@ -58,6 +60,8 @@ function getAll(string $baseUrl, string $path, array $params, array $headers): a
     return $results;
 }
 ```
+
+**Python**
 
 ```python
 def get_all(base_url, path, params, headers):
@@ -75,6 +79,8 @@ def get_all(base_url, path, params, headers):
         page += 1
     return results
 ```
+
+**JavaScript (Node.js)**
 
 ```javascript
 async function getAll(baseUrl, path, params, headers) {

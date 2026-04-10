@@ -63,6 +63,8 @@ GET /api/v1/domains/{domain-guid}/actions/{action-id}.json
 
 Poll at a short interval initially, backing off if the action is still pending after several attempts. Most actions complete within a few seconds; Archive-related actions may take longer.
 
+**PHP**
+
 ```php
 function pollAction(string $baseUrl, string $actionPath, array $headers, int $maxAttempts = 60, int $interval = 3): array {
     $url = $baseUrl . $actionPath;
@@ -80,6 +82,8 @@ function pollAction(string $baseUrl, string $actionPath, array $headers, int $ma
     throw new RuntimeException("Action did not complete after {$maxAttempts} attempts");
 }
 ```
+
+**Python**
 
 ```python
 import time
@@ -101,6 +105,8 @@ def poll_action(base_url, action_path, headers, max_attempts=60, interval=3):
         time.sleep(interval)
     raise TimeoutError(f"Action did not complete after {max_attempts} attempts")
 ```
+
+**JavaScript (Node.js)**
 
 ```javascript
 async function pollAction(baseUrl, actionPath, headers, maxAttempts = 60, interval = 3000) {

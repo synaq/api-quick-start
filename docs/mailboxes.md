@@ -67,6 +67,8 @@ Check the `pages` field in the response to determine how many pages exist, then 
 
 **Example — fetch all mailboxes for a domain:**
 
+**PHP**
+
 ```php
 function getAllMailboxes(string $domainGuid, array $headers, string $baseUrl): array {
     $mailboxes = [];
@@ -85,6 +87,8 @@ function getAllMailboxes(string $domainGuid, array $headers, string $baseUrl): a
     return $mailboxes;
 }
 ```
+
+**Python**
 
 ```python
 def get_all_mailboxes(domain_guid, headers, base_url):
@@ -108,6 +112,8 @@ def get_all_mailboxes(domain_guid, headers, base_url):
         page += 1
     return mailboxes
 ```
+
+**JavaScript (Node.js)**
 
 ```javascript
 async function getAllMailboxes(domainGuid, headers, baseUrl) {
@@ -449,6 +455,8 @@ salt = four_secure_random_bytes()
 ssha_password = "{SSHA}" + base64( sha1(password + salt) + salt )
 ```
 
+**PHP**
+
 ```php
 function ssha256(string $password): string {
     $salt   = random_bytes(4);
@@ -456,6 +464,8 @@ function ssha256(string $password): string {
     return '{SSHA256}' . base64_encode($digest . $salt);
 }
 ```
+
+**Python**
 
 ```python
 import os
@@ -467,6 +477,8 @@ def ssha256(password: str) -> str:
     digest = hashlib.sha256(password.encode() + salt).digest()
     return '{SSHA256}' + base64.b64encode(digest + salt).decode()
 ```
+
+**JavaScript (Node.js)**
 
 ```javascript
 const crypto = require('crypto');
