@@ -32,10 +32,7 @@ A package has one or more editions. When creating a mailbox, you specify which e
 
 ## Organisational Units (OUs)
 
-An **OU** represents a customer in your hierarchy. OUs are either:
-
-- **Companies** — direct customers. Packages and domains live under companies.
-- **Sub-resellers** — intermediate resellers who can have their own companies underneath them.
+An **OU** represents a customer company in your hierarchy. Packages and domains live under companies.
 
 See [OUs](ous.md) for CRUD operations.
 

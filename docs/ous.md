@@ -1,8 +1,6 @@
 # Organisational Units (OUs)
 
-OUs represent your customers in the API hierarchy. There are two types:
-- **Companies** — direct customers; packages and domains are created under these
-- **Sub-resellers** — intermediate resellers who can have their own companies
+OUs represent your customers in the API hierarchy. A company is a direct customer of your reseller — packages and domains are created under companies.
 
 ---
 
@@ -22,15 +20,14 @@ Returns all OUs in your reseller scope. Supports rich filtering:
 | `slug`         | Filter by URL-friendly slug |
 | `search`       | Free-text search across title and other fields |
 | `parent_guid`  | Return only OUs directly under this parent |
-| `type`         | Filter by type: `company` or `reseller` |
 | `order_by`     | Field to sort by (e.g. `title`) |
 | `sort`         | Sort direction: `asc` or `desc` |
 | `exact_match`  | `1` to require exact matches on text filters |
 
-**Example — list companies under a specific reseller:**
+**Example — list companies under your reseller:**
 
 ```
-GET /api/v1/ous.json?parent_guid={reseller-guid}&type=company&limit=25
+GET /api/v1/ous.json?parent_guid={reseller-guid}&limit=25
 ```
 
 **Sample response:**
@@ -97,17 +94,7 @@ Required fields: `title`, `physical_address.line_1`, `physical_address.city`, `p
 Location: /api/v1/ous/{ou-guid}
 ```
 
-The new OU's GUID can be extracted from the `Location` header.
-
----
-
-## Create a sub-reseller
-
-Same payload as company creation, but target the sub-resellers endpoint:
-
-```
-POST /api/v1/ous/{reseller-guid}/subresellers.json
-```
+The new company's GUID can be extracted from the `Location` header.
 
 ---
 
