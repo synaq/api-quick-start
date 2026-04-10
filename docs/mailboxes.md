@@ -489,3 +489,372 @@ function ssha256(password) {
     return '{SSHA256}' + Buffer.concat([digest, salt]).toString('base64');
 }
 ```
+
+---
+
+## Quota usage
+
+Returns the current storage used by the mailbox. Only available for active mailboxes.
+
+```
+GET /api/v1/mailboxes/{mailbox-guid}/quota.json
+```
+
+**Sample response:**
+
+```json
+{
+  "quota_used": "524288000"
+}
+```
+
+`quota_used` is returned as a string, in bytes.
+
+---
+
+## Folder statistics
+
+Returns per-folder message counts and sizes. Only available for active mailboxes.
+
+```
+GET /api/v1/mailboxes/{mailbox-guid}/folderstats.json
+```
+
+**Sample response:**
+
+```json
+{
+  "folder_stats": [
+    {
+      "name": "Inbox",
+      "message_count": 142,
+      "size": 10485760
+    },
+    {
+      "name": "Sent",
+      "message_count": 37,
+      "size": 2097152
+    }
+  ]
+}
+```
+
+---
+
+## Whitelists
+
+Manage inbound sender whitelists for a mailbox. Each entry matches by address, domain, IPv4, or CIDR range.
+
+### List whitelist entries
+
+```
+GET /api/v1/mailboxes/{mailbox-guid}/whitelists.json
+```
+
+| Parameter | Description |
+|-----------|-------------|
+| `alias`   | Filter entries belonging to a specific alias address |
+| `page` / `limit` | Pagination |
+
+**Sample response:**
+
+```json
+{
+  "page": 1,
+  "limit": 25,
+  "pages": 1,
+  "total": 2,
+  "_embedded": {
+    "whitelists": [
+      {
+        "api_id": "wl-abc123",
+        "direction": "in",
+        "from_filter_value": "trusted@example.com"
+      }
+    ]
+  }
+}
+```
+
+### Add a whitelist entry
+
+```
+POST /api/v1/mailboxes/{mailbox-guid}/whitelists.json
+```
+
+```json
+{
+  "list": {
+    "from_filter_type": "address",
+    "from_filter_value": "trusted@example.com",
+    "alias": "alias@acme.com"
+  }
+}
+```
+
+| Field | Description |
+|-------|-------------|
+| `from_filter_type` | `address`, `domain`, `ipv4`, or `cidr` |
+| `from_filter_value` | The value to match |
+| `alias` | Optional — scope the entry to a specific alias of the mailbox |
+
+**Response:**
+
+```
+204 No Content
+```
+
+### Replace all whitelist entries
+
+Replaces the entire whitelist in one operation.
+
+```
+PATCH /api/v1/mailboxes/{mailbox-guid}/whitelists.json
+```
+
+```json
+{
+  "mailbox": {
+    "access_lists": [
+      { "from_filter_type": "domain", "from_filter_value": "trusted.com" },
+      { "from_filter_type": "address", "from_filter_value": "contact@partner.com" }
+    ]
+  }
+}
+```
+
+**Response:**
+
+```
+204 No Content
+```
+
+### Remove a whitelist entry
+
+```
+DELETE /api/v1/mailboxes/{mailbox-guid}/whitelists/{api-id}.json
+```
+
+**Response:**
+
+```
+204 No Content
+```
+
+---
+
+## Blacklists
+
+Manage inbound sender blacklists for a mailbox. Follows the same structure as whitelists.
+
+### List blacklist entries
+
+```
+GET /api/v1/mailboxes/{mailbox-guid}/blacklists.json
+```
+
+Supports the same `alias`, `page`, and `limit` parameters as whitelists.
+
+### Add a blacklist entry
+
+```
+POST /api/v1/mailboxes/{mailbox-guid}/blacklists.json
+```
+
+```json
+{
+  "list": {
+    "from_filter_type": "domain",
+    "from_filter_value": "spam-source.com"
+  }
+}
+```
+
+**Response:**
+
+```
+204 No Content
+```
+
+### Replace all blacklist entries
+
+```
+PATCH /api/v1/mailboxes/{mailbox-guid}/blacklists.json
+```
+
+```json
+{
+  "mailbox": {
+    "access_lists": [
+      { "from_filter_type": "domain", "from_filter_value": "spam-source.com" },
+      { "from_filter_type": "cidr", "from_filter_value": "192.0.2.0/24" }
+    ]
+  }
+}
+```
+
+**Response:**
+
+```
+204 No Content
+```
+
+### Remove a blacklist entry
+
+```
+DELETE /api/v1/mailboxes/{mailbox-guid}/blacklists/{api-id}.json
+```
+
+**Response:**
+
+```
+204 No Content
+```
+
+---
+
+## Signatures
+
+Set the primary and secondary signatures for a mailbox. Only available for `inactive` mailboxes — configure signatures before provisioning.
+
+```
+PATCH /api/v1/mailboxes/{mailbox-guid}/signatures.json
+```
+
+```json
+{
+  "mailbox": {
+    "primary_signature": "Regards,\nJane Doe",
+    "secondary_signature": "Sent from mobile",
+    "preferred_signature": "primary"
+  }
+}
+```
+
+| Field | Description |
+|-------|-------------|
+| `primary_signature` | Main signature text |
+| `secondary_signature` | Alternate signature text |
+| `preferred_signature` | Which signature to use by default: `primary` or `secondary` |
+
+**Response:**
+
+```
+204 No Content
+```
+
+---
+
+## Access statistics
+
+Returns a paginated log of mailbox login and access events within a time range.
+
+```
+GET /api/v1/mailboxes/{mailbox-guid}/accessstats.json
+```
+
+| Parameter | Required | Description |
+|-----------|----------|-------------|
+| `start_time` | Yes | Start of the time range, ISO 8601 UTC — e.g. `2024-01-01T00:00:00Z` |
+| `end_time` | No | End of the time range. Defaults to now |
+| `methods` | No | Comma-separated access methods to include. Defaults to all: `pop3,imap,webmail,zsync,soap,zco` |
+| `page` / `limit` | No | Pagination |
+
+**Sample request:**
+
+```
+GET /api/v1/mailboxes/{mailbox-guid}/accessstats.json?start_time=2024-01-01T00:00:00Z&methods=imap,webmail
+```
+
+**Sample response:**
+
+```json
+{
+  "page": 1,
+  "limit": 25,
+  "pages": 1,
+  "total": 3,
+  "_embedded": {
+    "records": [
+      {
+        "timestamp": "2024-01-15T08:23:11Z",
+        "method": "imap",
+        "ip_address": "203.0.113.42",
+        "user_agent": "Thunderbird/115"
+      }
+    ]
+  }
+}
+```
+
+---
+
+## Mail statistics
+
+Four endpoints return paginated mail traffic records for a mailbox. All follow the same parameter structure and response envelope.
+
+### Parameters (all four endpoints)
+
+| Parameter | Required | Description |
+|-----------|----------|-------------|
+| `start_time` | Yes | Start of the time range, ISO 8601 UTC — e.g. `2024-01-01T00:00:00Z` |
+| `end_time` | No | End of the time range. Defaults to now |
+| `direction` | No | Comma-separated: `inbound`, `outbound`, or both (default) |
+| `page` / `limit` | No | Pagination |
+
+### Clean mail
+
+Messages that passed all filters and were delivered.
+
+```
+GET /api/v1/mailboxes/{mailbox-guid}/cleanmailstats.json
+```
+
+### Junk mail
+
+Messages flagged as spam.
+
+```
+GET /api/v1/mailboxes/{mailbox-guid}/junkmailstats.json
+```
+
+Junk mail also supports an optional `recipient` parameter to filter outbound junk by recipient address.
+
+### Rejected mail
+
+Messages rejected at the gateway before delivery.
+
+```
+GET /api/v1/mailboxes/{mailbox-guid}/rejectedmailstats.json
+```
+
+### Virus mail
+
+Messages blocked due to virus detection.
+
+```
+GET /api/v1/mailboxes/{mailbox-guid}/virusmailstats.json
+```
+
+**Sample response (all four endpoints):**
+
+```json
+{
+  "page": 1,
+  "limit": 25,
+  "pages": 2,
+  "total": 41,
+  "_embedded": {
+    "records": [
+      {
+        "timestamp": "2024-01-15T09:10:00Z",
+        "from": "sender@example.com",
+        "to": "jane@acme.com",
+        "subject": "Meeting notes",
+        "direction": "inbound",
+        "size": 14823
+      }
+    ]
+  }
+}
+```
