@@ -62,7 +62,7 @@ Contact the SYNAQ development team at <dev@synaq.com> for integration assistance
 
 ## Prerequisites
 
-- **Reseller GUID** — your top-level identifier, provided by SYNAQ
+- **Reseller GUID** — your top-level identifier, provided by SYNAQ with your credentials. Required to create customer companies. See [Example Workflows](docs/example-workflows.md#before-you-begin-your-reseller-guid) for how to look it up if needed.
 - **API key** — provided alongside your GUID
 - **Staging credentials** — provided first; production credentials issued after successful staging integration
 

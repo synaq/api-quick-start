@@ -9,6 +9,42 @@ For reference:
 
 ---
 
+## Before you begin: your Reseller GUID
+
+Every reseller on the SYNAQ platform has a unique **Reseller GUID** — a UUID that identifies your top-level account. It is required whenever you create a new customer company, and is the starting point for your entire entity hierarchy.
+
+Your Reseller GUID is provided by SYNAQ when your API credentials are provisioned. It will be included in the onboarding information you receive alongside your API username and key.
+
+**If you do not have your Reseller GUID**, you can look it up via the API once authenticated:
+
+```
+GET /api/v1/ous.json?type=reseller&limit=1
+```
+
+Your reseller will appear as the top-level result. Extract the `guid` field:
+
+```json
+{
+  "page": 1,
+  "limit": 1,
+  "pages": 1,
+  "total": 1,
+  "_embedded": {
+    "ous": [
+      {
+        "guid": "{your-reseller-guid}",
+        "title": "Your Reseller Name",
+        "type": "reseller"
+      }
+    ]
+  }
+}
+```
+
+Store this GUID in your integration's configuration. All new customer companies are created under it.
+
+---
+
 ## Workflow 1: New customer on a mailbox product
 
 Covers creating a company, package, domain, and mailbox from scratch.

@@ -29,11 +29,76 @@ Common filters:
 | `sort_descending`| `1` to reverse sort order |
 | `page` / `limit` | Pagination |
 
+See [Pagination](pagination.md) for the full response envelope format.
+
+---
+
+## Retrieving all mailboxes for a domain
+
+### Recommended approach: filter by domain GUID
+
+Use `domain_guid` rather than `domain_name` wherever possible. A GUID lookup is a direct index hit; a name lookup requires an additional resolution step.
+
 ```
-GET /api/v1/mailboxes.json?domain_name=acme.com&exact_match=1&limit=25
+GET /api/v1/mailboxes.json?domain_guid={domain-guid}&exact_match=1&limit=100
 ```
 
-See [Pagination](pagination.md) for the full response envelope format.
+Always set `exact_match=1` to avoid partial matches from domains whose names contain yours as a substring.
+
+Set `limit` explicitly — the default is 5 items per page, which is inefficient for domains with many mailboxes.
+
+### Paginating through a large mailbox list
+
+Check the `pages` field in the response to determine how many pages exist, then iterate:
+
+**Sample response envelope:**
+
+```json
+{
+  "page": 1,
+  "limit": 100,
+  "pages": 3,
+  "total": 243,
+  "_embedded": {
+    "mailboxes": [ ... ]
+  }
+}
+```
+
+**Python example — fetch all mailboxes for a domain:**
+
+```python
+def get_all_mailboxes(domain_guid, headers, base_url):
+    mailboxes = []
+    page = 1
+    while True:
+        params = {
+            'domain_guid': domain_guid,
+            'exact_match': 1,
+            'limit': 100,
+            'page': page,
+        }
+        response = requests.get(
+            f'{base_url}/api/v1/mailboxes.json',
+            params=params,
+            headers=headers
+        ).json()
+        mailboxes.extend(response['_embedded']['mailboxes'])
+        if page >= response['pages']:
+            break
+        page += 1
+    return mailboxes
+```
+
+### Retrieving a single known mailbox by email address
+
+When you know the full email address:
+
+```
+GET /api/v1/mailboxes.json?domain_name=acme.com&email_local=jane.doe&exact_match=1
+```
+
+This will return a single-item result set. Extract the GUID from `_embedded.mailboxes[0].guid` for subsequent operations.
 
 ---
 
