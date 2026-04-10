@@ -43,6 +43,22 @@ GET /api/v1/mailboxes.json?domain_guid={guid}&exact_match=1&page=2&limit=25
 
 ## Iterating all results
 
+```php
+function getAll(string $baseUrl, string $path, array $params, array $headers): array {
+    $results = [];
+    $page = 1;
+    do {
+        $params['page'] = $page;
+        $response = httpGet($baseUrl . $path, $params, $headers); // use your HTTP client of choice
+        $embedded = $response['_embedded'] ?? [];
+        $items = !empty($embedded) ? array_values($embedded)[0] : [];
+        $results = array_merge($results, $items);
+        $page++;
+    } while ($page <= $response['pages']);
+    return $results;
+}
+```
+
 ```python
 def get_all(base_url, path, params, headers):
     results = []
@@ -58,6 +74,23 @@ def get_all(base_url, path, params, headers):
             break
         page += 1
     return results
+```
+
+```javascript
+async function getAll(baseUrl, path, params, headers) {
+    const results = [];
+    let page = 1;
+    do {
+        const query = new URLSearchParams({ ...params, page }).toString();
+        const res = await fetch(`${baseUrl}${path}?${query}`, { headers });
+        const response = await res.json();
+        const embedded = response._embedded ?? {};
+        const items = Object.values(embedded)[0] ?? [];
+        results.push(...items);
+        page++;
+    } while (page <= response.pages);
+    return results;
+}
 ```
 
 ---

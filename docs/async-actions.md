@@ -63,6 +63,24 @@ GET /api/v1/domains/{domain-guid}/actions/{action-id}.json
 
 Poll at a short interval initially, backing off if the action is still pending after several attempts. Most actions complete within a few seconds; Archive-related actions may take longer.
 
+```php
+function pollAction(string $baseUrl, string $actionPath, array $headers, int $maxAttempts = 60, int $interval = 3): array {
+    $url = $baseUrl . $actionPath;
+    for ($attempt = 0; $attempt < $maxAttempts; $attempt++) {
+        $response = httpGet($url, $headers); // use your HTTP client of choice
+        if ($response['status'] === 404) {
+            // Special case: mailbox DELETE removes the action record on completion
+            return ['state' => 'finished'];
+        }
+        $data = $response['body'];
+        if ($data['state'] === 'finished') return $data;
+        if ($data['state'] === 'error') throw new RuntimeException('Action failed: ' . implode(', ', $data['errors']));
+        sleep($interval);
+    }
+    throw new RuntimeException("Action did not complete after {$maxAttempts} attempts");
+}
+```
+
 ```python
 import time
 import requests
@@ -82,6 +100,24 @@ def poll_action(base_url, action_path, headers, max_attempts=60, interval=3):
             raise Exception(f"Action failed: {data.get('errors')}")
         time.sleep(interval)
     raise TimeoutError(f"Action did not complete after {max_attempts} attempts")
+```
+
+```javascript
+async function pollAction(baseUrl, actionPath, headers, maxAttempts = 60, interval = 3000) {
+    const url = baseUrl + actionPath;
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        const res = await fetch(url, { headers });
+        if (res.status === 404) {
+            // Special case: mailbox DELETE removes the action record on completion
+            return { state: 'finished' };
+        }
+        const data = await res.json();
+        if (data.state === 'finished') return data;
+        if (data.state === 'error') throw new Error(`Action failed: ${data.errors}`);
+        await new Promise(resolve => setTimeout(resolve, interval));
+    }
+    throw new Error(`Action did not complete after ${maxAttempts} attempts`);
+}
 ```
 
 ---

@@ -65,7 +65,26 @@ Check the `pages` field in the response to determine how many pages exist, then 
 }
 ```
 
-**Python example — fetch all mailboxes for a domain:**
+**Example — fetch all mailboxes for a domain:**
+
+```php
+function getAllMailboxes(string $domainGuid, array $headers, string $baseUrl): array {
+    $mailboxes = [];
+    $page = 1;
+    do {
+        $params = http_build_query([
+            'domain_guid' => $domainGuid,
+            'exact_match' => 1,
+            'limit'       => 100,
+            'page'        => $page,
+        ]);
+        $response = httpGet("{$baseUrl}/api/v1/mailboxes.json?{$params}", $headers); // use your HTTP client of choice
+        $mailboxes = array_merge($mailboxes, $response['_embedded']['mailboxes']);
+        $page++;
+    } while ($page <= $response['pages']);
+    return $mailboxes;
+}
+```
 
 ```python
 def get_all_mailboxes(domain_guid, headers, base_url):
@@ -88,6 +107,21 @@ def get_all_mailboxes(domain_guid, headers, base_url):
             break
         page += 1
     return mailboxes
+```
+
+```javascript
+async function getAllMailboxes(domainGuid, headers, baseUrl) {
+    const mailboxes = [];
+    let page = 1;
+    do {
+        const params = new URLSearchParams({ domain_guid: domainGuid, exact_match: 1, limit: 100, page }).toString();
+        const res = await fetch(`${baseUrl}/api/v1/mailboxes.json?${params}`, { headers });
+        const response = await res.json();
+        mailboxes.push(...response._embedded.mailboxes);
+        page++;
+    } while (page <= response.pages);
+    return mailboxes;
+}
 ```
 
 ### Retrieving a single known mailbox by email address
@@ -415,6 +449,14 @@ salt = four_secure_random_bytes()
 ssha_password = "{SSHA}" + base64( sha1(password + salt) + salt )
 ```
 
+```php
+function ssha256(string $password): string {
+    $salt   = random_bytes(4);
+    $digest = hash('sha256', $password . $salt, true);
+    return '{SSHA256}' . base64_encode($digest . $salt);
+}
+```
+
 ```python
 import os
 import hashlib
@@ -424,4 +466,14 @@ def ssha256(password: str) -> str:
     salt = os.urandom(4)
     digest = hashlib.sha256(password.encode() + salt).digest()
     return '{SSHA256}' + base64.b64encode(digest + salt).decode()
+```
+
+```javascript
+const crypto = require('crypto');
+
+function ssha256(password) {
+    const salt   = crypto.randomBytes(4);
+    const digest = crypto.createHash('sha256').update(Buffer.concat([Buffer.from(password), salt])).digest();
+    return '{SSHA256}' + Buffer.concat([digest, salt]).toString('base64');
+}
 ```
