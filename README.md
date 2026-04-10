@@ -48,6 +48,7 @@ The SYNAQ API allows resellers to directly manage customer data and provision SY
 
 | Guide | Description |
 |-------|-------------|
+| [Example Workflows](docs/example-workflows.md) | Full end-to-end flows: provisioning, suspension, closing, cancellation |
 | [Migration Guide](docs/migration-guide.md) | Migrate domains between products; move domains between companies |
 | [Legacy API Changes](docs/legacy-changes.md) | Upgrade notes from the pre-2019 API structure |
 
